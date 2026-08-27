@@ -824,18 +824,24 @@ async function submitOrder(){
     image: exportCanvas().toDataURL("image/png")
   };
 
+  /* Apps Script は CORS ヘッダーを返さないため no-cors で送る。
+     レスポンスは読めないが、サーバー側の処理は確実に実行される。 */
   try{
     await fetch(ENDPOINT, {
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify(payload)
     });
-    noticeOk.innerHTML = "入稿を受け付けました。ご注文と照合のうえ、2営業日以内に発送いたします。<br>控えとして入稿データもダウンロードしました。";
+    noticeOk.innerHTML =
+      "入稿を受け付けました。ご入力のメールアドレス宛に、入稿データを添付した確認メールをお送りしています。<br>" +
+      "数分たっても届かない場合は迷惑メールフォルダをご確認のうえ、お手数ですがご連絡ください。";
     noticeOk.style.display = "block";
-    downloadPNG();
     submitBtn.textContent = "入稿済み";
   }catch(err){
-    noticeErr.innerHTML = "送信に失敗しました。お手数ですが「入稿データを保存する」から保存のうえ、メールにてお送りください。";
+    noticeErr.innerHTML =
+      "送信できませんでした。通信環境をご確認のうえ、再度お試しください。<br>" +
+      "繰り返し失敗する場合は「入稿データを保存する」から保存し、メールにてお送りください。";
     noticeErr.style.display = "block";
     submitBtn.disabled = false;
     submitBtn.textContent = "この内容で入稿する";
