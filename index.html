@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>彫刻シミュレーター | 大安工業株式会社</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#00AC97; --accent-dark:#00887A;
+  --accent-tint:#E8F7F4; --accent-line:#9FDDD3;
+
+  --ink:#131313; --ink-sub:#5A5A58; --ink-mute:#918F8C;
+
+  --line:#E2E2DE; --line-strong:#CBCBC6;
+  --bg:#F2F2EF;               /* 背景を一段落とす */
+  --panel:#FFFFFF;
+  --stage:#1B1C1E;            /* プレビューは暗い舞台 */
+
+  --radius:2px;               /* 工業製品らしくシャープに */
+  --shadow-sm:0 1px 2px rgba(19,19,19,.05);
+  --shadow-md:0 4px 16px -4px rgba(19,19,19,.12);
+  --head-h:63px;
+}
+html{-webkit-text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:clip}
+body{font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.7;font-weight:400;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+button{font-family:inherit}
+
+.scroll::-webkit-scrollbar{width:10px}
+.scroll::-webkit-scrollbar-track{background:transparent}
+.scroll::-webkit-scrollbar-thumb{background:#D3D3CE;border-radius:5px;border:3px solid var(--bg)}
+.scroll::-webkit-scrollbar-thumb:hover{background:#BCBCB6}
+
+header{border-bottom:1px solid var(--line);background:var(--panel);padding:18px 32px;flex:0 0 auto}
+.header-inner{display:flex;align-items:center;gap:18px}
+.logo{height:26px;width:auto;display:block}
+.header-div{width:1px;height:22px;background:var(--line-strong)}
+.header-title{font-size:13px;font-weight:500;letter-spacing:.1em;color:var(--ink-sub)}
+
+/* --- タイポ：レンジを広げる --- */
+.sec-head{margin-bottom:18px}
+.sec-num{font-size:10px;letter-spacing:.22em;color:var(--accent-dark);font-weight:700;display:block;margin-bottom:4px}
+.sec-title{font-size:17px;font-weight:700;letter-spacing:.01em;line-height:1.35}
+
+/* --- 左：操作パネル（パネル化しない背景レイヤー） --- */
+.plate-list{display:flex;flex-direction:column;gap:8px}
+.plate-btn{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--radius);cursor:pointer;text-align:left;color:var(--ink);
+  box-shadow:var(--shadow-sm);
+  transition:border-color .16s,background-color .16s,box-shadow .16s,transform .12s}
+.plate-btn:hover{border-color:var(--line-strong)}
+.plate-btn:active{transform:translateY(1px)}
+.plate-btn.active{border-color:var(--accent);background:var(--accent-tint);box-shadow:var(--shadow-md)}
+.plate-btn.active .plate-name{font-weight:700}
+.plate-btn.active .plate-icon{color:var(--accent-dark)}
+.plate-btn.active .plate-dim{color:var(--accent-dark);opacity:.85}
+.plate-icon{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  color:var(--ink-mute);transition:color .16s}
+.plate-name{font-size:13.5px;font-weight:500;display:block;line-height:1.45}
+.plate-dim{font-size:11px;color:var(--ink-mute);display:block;line-height:1.45;font-variant-numeric:tabular-nums}
+.plate-check{margin-left:auto;color:var(--accent);opacity:0;transition:opacity .16s;flex-shrink:0;display:flex}
+.plate-btn.active .plate-check{opacity:1}
+
+.upload{display:block;border:1.5px dashed var(--line-strong);border-radius:var(--radius);
+  padding:28px 18px;text-align:center;cursor:pointer;background:var(--panel);box-shadow:var(--shadow-sm);
+  transition:border-color .16s,background-color .16s}
+.upload:hover{border-color:var(--accent)}
+.upload.has-file{border-style:solid;border-color:var(--accent);background:var(--accent-tint)}
+.upload svg{color:var(--ink-mute);margin-bottom:9px}
+.upload.has-file svg{color:var(--accent-dark)}
+.upload-main{font-size:13.5px;display:block;font-weight:500}
+.upload-sub{font-size:11px;color:var(--ink-mute);display:block;margin-top:4px;line-height:1.6}
+.file-name{font-size:11px;color:var(--ink-sub);margin-top:11px;word-break:break-all;
+  display:block;font-weight:500;padding-top:9px;border-top:1px solid var(--accent-line)}
+
+.slider-row{display:flex;align-items:center;gap:14px}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;
+  background:var(--line-strong);outline:none;border-radius:2px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+  background:var(--panel);border-radius:50%;cursor:pointer;border:1.5px solid var(--ink);
+  box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;background:var(--panel);border-radius:50%;
+  cursor:pointer;border:1.5px solid var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input[type=range]:focus::-webkit-slider-thumb{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-tint)}
+.slider-val{font-size:15px;font-weight:700;min-width:52px;text-align:right;font-variant-numeric:tabular-nums}
+.scale-ends{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-mute);margin-top:8px}
+
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.pad button{aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);color:var(--ink-sub);border:1px solid var(--line);box-shadow:var(--shadow-sm);
+  border-radius:var(--radius);cursor:pointer;transition:border-color .14s,color .14s,background-color .14s,transform .1s}
+.pad button:hover{border-color:var(--line-strong);color:var(--ink)}
+.pad button:active{transform:translateY(1px)}
+.pad button.ghost{visibility:hidden;pointer-events:none}
+.align-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.align-row button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 8px;
+  font-size:9.5px;letter-spacing:.02em;background:var(--panel);border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);border-radius:var(--radius);cursor:pointer;color:var(--ink-sub);
+  transition:border-color .14s,color .14s,transform .1s}
+.align-row button:hover{border-color:var(--line-strong);color:var(--ink)}
+.align-row button:active{transform:translateY(1px)}
+
+/* --- プレビュー：主役として扱う --- */
+.preview-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;
+  flex-wrap:wrap;min-width:0}
+.preview-head .sec-head{margin-bottom:0}
+.seg{display:inline-flex;background:#E5E5E1;border-radius:var(--radius);padding:3px;gap:3px;
+  flex-shrink:0;max-width:100%}
+.seg-btn{padding:7px 14px;font-size:11.5px;font-weight:500;border:none;background:transparent;
+  white-space:nowrap;
+  color:var(--ink-sub);border-radius:1px;cursor:pointer;letter-spacing:.02em;transition:all .16s}
+.seg-btn:hover{color:var(--ink)}
+.seg-btn.active{background:var(--panel);color:var(--ink);font-weight:700;box-shadow:var(--shadow-sm)}
+
+.stage{background:var(--stage);border-radius:var(--radius);padding:30px;min-width:0;max-width:100%;
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);
+  background-image:radial-gradient(ellipse at 50% 30%, #262729 0%, #1B1C1E 70%)}
+#previewCanvas{display:block;max-width:100%}
+
+.legend{margin-top:12px;padding:13px 18px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);min-height:56px;display:flex;
+  flex-direction:column;justify-content:center}
+.gradient-bar{height:10px;border-radius:5px;border:1px solid var(--line-strong);
+  background:linear-gradient(to right,#000 0%,#3d3d3d 22%,#8a8a8a 50%,#cfcfcf 76%,#fff 100%)}
+.gradient-labels{display:flex;justify-content:space-between;font-size:10.5px;
+  color:var(--ink-sub);margin-top:7px;letter-spacing:.02em}
+.legend-note{font-size:11.5px;color:var(--ink-sub);line-height:1.6}
+
+/* --- 仕様 --- */
+.spec{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);
+  padding:6px 20px;box-shadow:var(--shadow-sm)}
+.spec-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  padding:12px 0;border-bottom:1px solid var(--line)}
+.spec-row:last-child{border-bottom:none}
+.spec-key{color:var(--ink-sub);flex-shrink:0;font-size:12px}
+.spec-val{font-weight:500;font-size:14px;font-variant-numeric:tabular-nums;text-align:right}
+.spec-val.warn{color:#B06A00}
+
+.notice{padding:13px 16px;border-radius:var(--radius);font-size:12px;line-height:1.7;margin-top:14px}
+.notice-info{background:#EBEBE7;color:var(--ink-sub);border:1px solid var(--line)}
+.notice-ok{background:var(--accent-tint);color:var(--accent-dark);border:1px solid var(--accent-line)}
+.notice-err{background:#FBEFEF;color:#8A2D2D;border:1px solid #E7D0D0}
+.notice-warn{background:#FBF6EA;color:#7F5C1C;border:1px solid #EADCC0}
+
+/* --- 入稿 --- */
+.form-panel{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);
+  padding:28px;box-shadow:var(--shadow-sm)}
+.form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px}
+.form-grid .full{grid-column:1/-1}
+label.fld{display:block;margin-bottom:16px}
+label.fld > span{font-size:11px;color:var(--ink-sub);display:block;margin-bottom:6px;font-weight:500;letter-spacing:.02em}
+label.fld .req{color:var(--accent-dark);font-style:normal;font-weight:700}
+input[type=text],input[type=email],textarea{width:100%;padding:11px 12px;font-family:inherit;font-size:13.5px;
+  color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--panel);
+  transition:border-color .16s,box-shadow .16s}
+input::placeholder,textarea::placeholder{color:#BCBCB8}
+input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+textarea{resize:vertical;min-height:72px}
+.btn{width:100%;padding:16px;font-size:13.5px;font-weight:500;border-radius:var(--radius);
+  cursor:pointer;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:background-color .16s,border-color .16s,color .16s,opacity .16s,transform .1s}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:#fff;border:1px solid var(--accent);box-shadow:var(--shadow-sm)}
+.btn-primary:hover:not(:disabled){background:var(--accent-dark);border-color:var(--accent-dark)}
+.btn-secondary{background:var(--panel);color:var(--accent-dark);border:1px solid var(--accent);margin-top:10px}
+.btn-secondary:hover:not(:disabled){background:var(--accent-tint)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.form-foot{font-size:11px;color:var(--ink-mute);margin-top:14px;line-height:1.7}
+
+.credit{border-top:1px solid var(--line);margin-top:44px;padding-top:22px;
+  font-size:11px;color:var(--ink-mute);line-height:1.8}
+.credit a{color:var(--ink-sub);text-decoration:none}
+.credit a:hover{color:var(--accent-dark)}
+
+/* ============ PC：2カラム独立スクロール ============ */
+@media(min-width:901px){
+  html,body{height:100%;overflow:hidden}
+  .layout{display:flex;flex-direction:column;height:100vh}
+  .app{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:360px minmax(0,1fr)}
+  .col{overflow-y:auto;overscroll-behavior:contain;min-width:0}
+  .col-left{padding:40px 36px 64px;border-right:1px solid var(--line);
+    display:flex;flex-direction:column;gap:46px;background:var(--bg)}
+  .col-right{padding:40px 48px 64px;display:flex;flex-direction:column;gap:38px}
+}
+
+/* ============ mobile ============ */
+@media(max-width:900px){
+  :root{--head-h:55px}
+  header{padding:14px 18px;position:sticky;top:0;z-index:30}
+  .logo{height:22px}
+  .layout{display:block}
+  /* 左右の余白は .app ではなく各セクションに持たせる。
+     こうすればプレビューだけを全幅にするのに負マージンが要らない。 */
+  .app{display:grid;grid-template-columns:minmax(0,1fr);row-gap:38px;
+       padding:0 0 80px;width:100%;max-width:100%}
+  .col{display:contents}
+  .app > section{min-width:0;padding-left:18px;padding-right:18px}
+  .s-preview{order:1} .s-plate{order:2} .s-upload{order:3}
+  .s-size{order:4} .s-density{order:5} .s-pos{order:6}
+  .s-spec{order:7} .s-form{order:8} .s-credit{order:9}
+  .s-preview{
+    position:sticky;top:calc(var(--head-h) - 1px);z-index:12;background:var(--bg);
+    padding:12px 18px;
+    border-bottom:1px solid var(--line);
+    box-shadow:0 8px 14px -10px rgba(0,0,0,.2);
+  }
+  .preview-head{margin-bottom:10px;align-items:center;justify-content:flex-end}
+  .preview-head .sec-head{display:none}
+  .stage{padding:12px;height:clamp(220px, 44vh, 380px)}
+  .legend{margin-top:10px;padding:9px 14px;min-height:0}
+  .gradient-bar{height:8px}
+  .gradient-labels{font-size:10px;margin-top:5px}
+  .legend-note{font-size:11px}
+  .sec-title{font-size:16px}
+  .form-grid{grid-template-columns:minmax(0,1fr)}
+  .form-panel{padding:22px}
+  .pad button{aspect-ratio:auto;padding:14px 0}
+  .credit{margin-top:0}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<header>
+  <div class="header-inner">
+    <img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAK0AAABQCAYAAABro/WEAAAs6ElEQVR42u2deXxdZZ3/389zzrlrki62MIC4oAgSR0VBmFGHBCkKikDbXEEWYZCGpgVEWZwZ9eaqPzcWgbYJKTgyForcmwKKgyg4qc4w6giCSxVnhBHUsnRPctdznuf7++Oce9vQJTfdSJ1++7qvQO7JOc/yOd/nu38Vg/3r0Ho61gqgeCkJAa0pl5Hi1+jq+ShDWZeOXoNSQqH/xyTjx1OpGFAOzVMNGAbWAE/j6Mdx3P+E4Gd8sHtt46otn7UzlM87ZDKGQv+3SSdPo1Ta3jgNibhDufoYXfOPidZh5565O2iw/+fEY0dTqVkUeusLxJBKORTL99E1/8zGPOtr1pkLyPd9ibaWaxgpBijcrW8hgusqArOOmhzOOT0bEFE7vdbN0MCAR3e3T74vSyKexa9ZhPFxIyI42hKLOVQrV7gvy6YoFUOpGTh6Bo7zRpR6P34AwnPcM/AISg+i1AN0fnQEcozZlP20b9JQ1qWz26fQfyXJeC/VmkW29UJuA7BaG5JJl+LoJ5i74MaXB7Qi4WCMAQJBiSBoPPcgEvG5wFwq1We579avUSoOkMm8EP5dVqNydj8C9kXA5gIKfdfQmvoSxbLBWgelmgCssqQSdcDeQD7v6JdxKgqlVHj8KQelFH4gFIuGYtGg1KtIxnOkUk9w38AVZE9wUTlLNuvuR8E+CNh8/9W0pL9EsRxgrW4esEmHYjEE7FDWJZMxelJNUCkVypzKIQgsw6MBwl+RSN7A0ef+OysWvY1cLiCfd/7Ct1r+4gDbmvoypVKdw6qmRIJU0mFk9MoGYDtzAYCexFPWKOUSBMLIaIDrHI+beITCkkvIZAyS1Yio5m5la6GKuV0lQ2EFFAmkoYSplxGzCUSaGIEKJj1gB/uuCgFbDrCimwNsJBKMlK4ks/D6LQELMPmP2nCSLpWKQekErS39rOg/HDX/Ewg63NztgHHVqmiB1EaU2j4URRTWgMgMCovTsHA0uu/elPNDzf2+21rx/RnYHYjuogStQMlGAGauUpMWsOn0V0LAToTD1gHbcz1DQy6dncFYbrbPkHKwVhgtBbS2fJwV/bejcpZCQUfccWvqqM9SPbdDtqWUIjCg9Uzc+KEA9PbuXSDUn1fzD0WrGQRmnP1RIDw/qTlsOv2ViYkEW3LYnojDdgZbH8G7xh4MIgGigvBnsx8CEAPYCclvda47POLT2vIRCv0DZDKGldlxZFz1NCLjSZEBqaTG+scgKDr28gsdPk+h5e2kkhoRsyO8hhYY+/TklGH7riKd+srERYKUw2jxqs2AzW1T/NlF8UBNp63VxS256AnssQhYgSAAPwArQSjDNgsU5TE84jOldR75vj/S2fP5bU5yTXuEVP1bajVAnHEFReH9KJaRb9+7ylA4VgE+EM1RdrB+DtUaKPc3Y+c5Gcxa/VfSkoo4rExMJBgdvYquBdftCLC7AbSyhE2jr6JatSB6AhwzDfJKlD4ceAOtKRc/gErVgqI58CqXkWJAKvE5Bhf/nM6FD2zlhOjqCgXD4eKTtMTX4bqvIAhk2wspDuUKaPU+8jfNpKtr7R73ENUpm9V0dVke+NpMyrX3Uq5s/wWre7J8fx3iPDlmnpMCsMlrIw47MZFgtNgUYHcOtCuBzmgju3qW7PJm/fXBb6BSORlR55JKHIsVqFQNaly3sMKKJjCC9v6ZFX1v5per1pLNanKRA0IpIZvVXHjFRgb7fk7Mm4UJLGzDdaiUwtiA1vQURuUilPoSQ1kX2PMaegcapQLySz5KW+uU0PWq3O3NmpjnYMxjdHVvIpvVKGVffsAuuZKW1LU7xWFHSleTaQ6wu85p83mHmTNViOSOiSF/TbtEXPHJ6LOI+5aeAWRpTb+F0ZKNOJ3aAWw1vh/Q2nIgIyPXkcudv5UNtwNNDgvyII4zC1GyfQlBHMoVQeuPc8+iW1m5dsOYl2BPWQ16ey33LHoFOFdQrsgOxRhRguOA8ODY+b3cgE3XATsBGTbpUixeTabn2mYBu+ugHRMPkNspoZhsNlR6OnOGM+bdywM3PUBRPkcifhXVmmCt7Bi4yqVYNMTj5zHYP8DczCNjxISV0YZq91uUSl9EKw+RbRu/lFIEgaE1PZNh8xVyuYsYGPAihXHP0NKlLrmcz9191zIlOZOR4o5OGUErh1KphqO/PWZ+L5/S9YmQw1aCiXHYCLBzJwbYyWDyEnI5Gw1YyOcdTr28ypzuq6lWz8VzLK4rEch2rNg5Dlj7+VBsWbX5+lzOIlnN7O6nMDJEMgGI3cFL4FAsGdKpv+euRR+mu9vn0QFvj8y+HvV09+KzaUleyGhpHLFILMk4GBlidvdTyB4+BZoBbGvqOkrliXq6dhqwk89Om8kYBMXAgMec+XdSqZ6Fo8HRFtmRaUw5lCuWRLyDwf53onJ2jJhQaI8WUxY35UWzoqnVLOnkbeQXv4tjuv2I4+5+wN5547tIxL9G1bdIE8qsoNB2UWjbfRn2bwxg09dFHHZiIsHI6DU7C9jJB9pQYJAGd8ssHKRSuZxkwkGJHWczLZ4HyIJtvgzZrEZmfJdi6XESCR3ZibdvDw4MWEkSj9/PN5d00t3tM5R1yWZ3bc2yWY3kHbq7fQr9HbSk70ckiQkYZ+MNiYSmWHocM/PBSNYOXhbADt7y8ZDDTjSWIOUwMnoNmQVf2VnATk7Q1qnO3TILFzNavJd0ytmhwR1xqFRCO2v+ppkh196Cq7a3KzIZg9afGneRQ+BqfN8iMpVE/LsM3jKPzlxALmd3CrzZrGYo65LLWVTGcM/Si/HcBxGZih9YlNLjsViUUmj9KTIZQ3u7etkAm05cH4oEzXLYSCQYKe0yYHeDnXYP0+rVIfDuufUyKtX34LotBEZQ21GijDG0pNoolmYBy1nZ6zRMVpmMIZ93mJt5gPyS79Da8gFGizuWIZXS+MaibZxUYoB7B2Yh6p/onPffjaN6ZdZhTbvQtUroBXp7peGSbW9XzFyl6MgZVM6Sw3LP0jfg8Hm8WBflClgZH7Aihpa0w8jod8gseGCvB8UPDHh0dvsMLokAuzNKV+kaMvN3GbCTH7S5nKUDlzm5P1FYMkBr61WMFIPtjluUgBKUeh+wfCtP0apVgohixZKFVKp/F74EgYxrVrNWKJUsqdRcqtVTuGfgdoz5GqrncXjJBuRyEVt8Cd279K1gLwIuIBZroVgyCLoJwIbOhEplGB1fGJnIZO9y2G6f/JKPk07XOezEATt39wB28oO2btIRUazov4Vi+TK0im3fZIXG9xXCO8IFygRbvQTt7Q6Zhc9w95IFtLUso2h8wBtHVFCAQ6lkUDpNKrmAUrmHe275KVb+DezPcNynsJUNkDCYagLiLWheh5J3oOjE2uNIJxWlMg0rQTMHvFIBibjHyEgPme5nyLc55HJm7wE2F1Dov4J0coIiQaR0jRY/SVdPHbC7ZdyTH7ShSUeTyz1Nof8RUokTKZe3l6Co8ANAXsu6mYcAz2zlHMhkTLiAC+6g0HcMU1ovZ9OIj1JNWAeUgxUJQYdLPH48rns8xkClCuKVwFqUG0eLRyIemuKCIPx+pBSAOE14++q7b5g6xWPjxpvJLLxzmy/iHgNsFBJY6L+CluQNEwKsijhsCNgv7y4OO/kVsS2pHgGl+F7oDdpBMLeIJRaPgTqsIVdudb9cKN929VzBptH7mNLqIeI3ad1QUXarUKkYRooB5bJBBLSTQusWtPYQgXI5/L5SMZEE7DalBNatIfG4w8bhf2HugstDuXJvctjOOoe9YcJKV3rPAXbfAW09AkrUY/j+jsctWDwXrA7jYrcVIK0Quros2awiXTuL0dKDEwJu/S4oJwRwxDmNEYzZwhky5vuJa/sioPXzDMwLbbqS3fMWg/DlCLh7cQjY8kTssA3HwT/sKcDuO6BdFXm4lDxLtWrQSrOjOFylwoDuHcuK4d+fenmVYPXpjJYKTGn1AIPspGtUqXqsxK6DS6Gp+ZZ06hoOPHYly2565VZOkz1hJe/u9iksvoLWlhsoN+3pAq2hJRUCdm7Pl/YUYPcd0Na1ZWtGEEph6sx4CrQkm5KXs1lNJldjdneG0dEvk0w4eK5GZDLkX2mGRwLi3t/Smvwhd930ukZ+3B5ReldqCn3XkEzdQKXSnEgAoLXFc6thEmIDsGbPLco+RcYAZremHOZyoXVCsprZ8z9JuTwXxXO0trjhMS8vb5EQpVxGSgGedxjxxHe5c2AG9Moue+a2JK8cruiaVQngAhwHjLFNATYUCxTGbGLThm+MEdT+T4O2bqw3bgJFIsycHS8DwdoJAEMaR+/cnhUEI2+nUr2dmKdIpRxEBBEzbuDOHtsl5VIq+6SShxO330Ap2a0eMT8ZziuzcBS/1kG1+ivSaa+p0yZ0eQuOeyCvmPkId113aBibsOfEmH0EtNHPmDsTx01s1047VjrbMOHn1L1mcz7+HGdcfCHGvhvf/1c8T9GSdnBdFebFESDYvQpipTxGRgNaW04h3/fRUEzYzcDI5x0+/LEXqNVOplr7Nemk2xxw0dSqBs87nETbQ9x13aGNtfw/C9qV0ThtcBSJGMAOgl1EYQxotXoLy8PEgCuiyOcdZnf/B6df/AGs+Vuq1dsQeYFk0qE15ZKIaRxHNUSIEMg79wlFEGkCuJpK1aLV58gPTIEu23zthyaoqys8bTILn2fjxlnU/F+TTjUHXJRDqRwQ844g0fYQy2565Z4C7r5VYkipv9th/YLwIk21BoF5JtyIVbITz5HQipDV9AKzL/kx8GPyt06HagfokxF7HPA6YrFWPNeZUGLntkT1ciU01+04P05TqxlaW/6KYul8lFq021OC6kDLZJ4nv3gW8BDp1JsolrafArSl/F0qB6SSR9DCwyy76SQymT/t7liJfQC0ouhUhvz1SSynhFmo29nYup/emDW0mCi9uld2MquCRrE7yWoK7YpMZj1wT/SBFQMHYYLXYINXYeSvgBaEKWg0QnV88UEJSiVAjkar9+B6mmp1xwE0SoHvC9ZegMji8NTJ7d4lfylwRR4mlWqnNDmAO/lBO9Tr0EmATp5KKvXKHdSYDZP+PM/BBKs49fLh3Zb01wCvKAoFzapVilwuYE73c8BzwI93+Rkr+o7HmFtJJt5EubIj4Ibp445+CysWHcHcy57cI3lsY4F7Eko9RDr5JorlJoFbMqRSR9DCQ+SvP4lM5s+7C7iTHbSqIZNaPhmWClI7YsqC6wBqCNj9SX91sWEzZ98M4o5duO+admFO5ies6HsPvvyEmPca/MDuQOcISCZdRuR44Mk9lty4JXCX3XAyLemHSCfbmwOudiKOeySq9WGW3TRrd3HcyQ3aoaxDZyYgv+RCWlPHNJFDFQaCO/KvIRh+s2e1+y1BvKsndD4bY07PixT6riEdz+P7dvsZuZGYoKV9j+/BZuA+x7Ib6jJu+wRl3CNp5SHy/buF405e60E+79CZC/jGza/Fi11PtWbHGa8hEYea/wvOeOFxRBSZwr5TPbyr1w+dHPa7FMsv4rrODmViEUAfEllX9g5wz/v4c4wWZ1H1VzVtVagD1/OOxHMeJn/9IbtqVdCTFrCZjOEb16ZpjRfwnGn44+RQCYLnKRzna6icjbIW9iXLiKCUkFk4iuJPOA7bLY2kRIWlpWwKgPa9UBZpDHBHZlGt/YZUcmLAjXlH4rU+zO27BtzJB9qBAY9MxrB4cQutU+4jHn875YoZJ8Lf4joOxeIaKvYOQNHRu2/2aMhmNWLTTdan3btzHAPc0ZPwg1UTA27JEPOOZGrrQ7sC3MkB2roxvx5ldNeiN3BIbIhE7KRI6HfG+XtLKqGwciPn9Gwgm3X2Sg2u3X26ZLOaIw84Atd9HTV/+9boen1aLeuAvVufdkvglionU/MnwHEj5czz3siUnee47i6DbWfruNaT/ta0C0qFgTDZrOYth3Sj1RdwnWmR4jXeGMNWPaPFZxB7M9msprfXRLlauz7OvUEdaFgFuZxhsO+fSMRdiuVgx/ujBPT/vCzj3aycrWb5olA5SyWPolSemHIWctxZE1XOdg20ITfbdY72wLI2/MoHsXIZidixlKtQ9m2TaSkWz3UJapeRWThKPu9sZZvdXePcU1Q3V91zy6eIxc6hWDbj7E2YC4d6tGEy2zeB+0amtjzE8kUnkcmsbha4uwbaZQMH0RKLY4oCifGv932FZwQtcYxzIFodBbyLSqmTRPwQjKHpLFUI69pOaXXZNHw7mQXf3u6kV/QdQCqZotjkOPcG+b7C8wS/HMf13oSj5hGPvZdyZdtVHTefGoLnaiq1F/G8ELQvV6nP3QXcJA9PBLgTB20H0BvVbY3bu3HtcRgdgD8+V/QICwJacYnHnLAiDFCtQqlkEKWazlIVCUgnXYrFX1IpLQxzvl6yefUFENWP5QPQ5Dj3BnmiEF9wXYdUzAUFpXITRTuUIRF38cv3c8ZHR6KT5eVTOncXcFEPsfzLs5oB7q4pYkriaB1DSKJUvKmPVnGUdqj5ltFSQLEUEBgb5VM1Nx6xhnjMxfdfoFqdzflXFVm1SravfKnYhMe5xz86hlZxtHIpVwzlsmnqdFFoKjVB+32TRrypA/fDl66mXJ2F7/92J8xhR5Gc9hDLFx08nnK2i6BVBivS+DneR7b4GZardyNu3/w4RALiCQex6ymW38/Zlz9FPu+M43u3Exrn3viMWYuod1ozc29Jafza3cy59OfkuyZP+9UtgVuqnrRzwI0dRTI+LnB3DbQSJVQjimb+scXPnSErAamki7XPUw1O5pzLHyMbdvEb18oxkXHujX8TXYuwwJ6mVNmI9q5CRLHqqMmlXG4J3I0jO8FxSwFxLwTuioGDtgfcfSMIXLAghiktLr7/c4aH302mJwTs3q4c+PLYscOKLZ6nqQYXMWfenygUXp7atM0C94JP/JmNI7Oo1X7bfAaEcimWDDHvKLQa4o7Fr94WcPWk3yyRgJinSSYdipXbGN70d5z/id9HIsH/BcBalBZaUmEzjbMX3FPvETtpxzwGuP6JVGu/IJ1yoy5G4wBXb86AaIk9vC3gTk7QhvlXBs9VtLa4IL+jUpnN7HkXc/5VxTDtO2P+wsEqWAmIxTRxTzMy8jE+tOA6snuunsAeAe6FC59nZPhkqrVf0DLRIBv39aS3Bq6eFBAlOv4lShtJxDStaQfUn6hU/4Fq9RjmzL+XfN5BRE3KY3F3rUX4wgZorZjS4oI8Q6V6KnMX3LTPnS51oJ1/1YuMbDq5wXGbB67B88YCN5t13bDbIkG0YNtSCoKwO+C2gowbHRubS8wba7oBkdCJ4LoKzw2LtZXKEJifYswyisFyzunZMMbmunO08+Pce6TRShP3FJ6nKVeGKVVvo7Tpi5xz5doJz19F4IdgOzOu73ewV4CbybzIN649GaZ8n3TqLRRLNRjHxKc0lMsV4rHX0xJ/kOWL3sOHL13tgsyktUVtt4GwMS5tLTBabN3Gt9Noa3FxyhPr2IiE0AmrDQrGrMbaX6H1DzHme3T1PN64NJ936MqE1bN3/qidSluLi1LuLiUg7jlRIFyLql8isL8kqN2HL3eRmffsTr+wlhbaWlysdcMwx20803Vh4/BMPE/tPeD2nYzi+0yf+hZqfjNNs12MgSnpI7H2CQq3nOqiuIzR0eR2A46NCCIuSj0BhPViO+oTV19g4/Ah+L5pqhqJJYoFVQGOXo/IC2j3GdLxZ3nv+cUx12azLr29Zpe8PXUPmaNuZuPwd6lWTdNVC/ceYBXK2YCrn8HwO+Zc/OzYF7bLTmgN6i2aHDvIhk1/plQJcLYxZ2vBcRSKMqN/Ku01UaEOXKd8HpWaakqzElEUS4ZEIon1XzeJNi/qSbCn6lTtO6R2S0OSyatgqt2zQONSB6zpk63SV8Z0bNwJWtMurFol9PbKHo1/3dVx7g2qr8XuUjKzWU1Hh25qznvbGiGiWLnSmfh+dMCaNcJ+2k/7aT/tp/20n/bTftpP+2k/7af9tJ/2037aT/tpP+1bpP7Sxr1j58JEDN75vNMoGrGmXXboKxdRYdmijtBYXL+28fuIOnrNVk6HLY3m23tOY04dsHKlHXf82aymA00HFnJhYEShEHqkMhnLtoJstnRY7HCcQMdK2ygXOh5lsy4dHcDKbRv9G98DK1eyzaiv+l5sOS7JalaitznW7e3PmnZpuMILBb3VPbc11+2Nu7FejN3zlz6zAzumtOpLf9c0jV8BRO2zb3gz7tLdWSJ+V6iZcTTjBt/RnJv5+4mXMlK7vgebr3HJ930UrRJhqZ0oaMaKCgsUu6sR/TPOyKyOHizbGZCwou+DuO6rATDB/zK75ztRDpmMWXSlhLuWHErKPR3HUVTMb5nb/TAA9/a/BqXPpBZUiXkKW/0mZ166HiTscJPLCYMDR5CIzaJatdigxnrvdrq7/cY4Hh3weNp8BK0SpBKKcu0R5nQ/Tja7dRxuvRjxXdcdSnrKhQT2HYidgWBx9NOI+jaz5+UjzhLevz6Hwb734sXeEM7XPMDs7qcai5/LWQp9RxOLvQsAP/gFcy/5UVPFj1fcciGJ+Ewq5RrG3kZm4WgI1l6FUpbB/gtwnZkopagFlrju44PdJQRFb1ahcpYVfcfjuOdg5K0gbYBBqefQ+mGK/u2c07MByeqtuFf9d7d9uZUZ085COBFjXgWi0Ho1jvNjhkeWk8k81yjtn8tZCv0dtCaPY7QsWFOCA/obnLQ+50LfKaSSf40gVKrPMveSuzfPK2f5ly+8gqkzL8Ca92DkIJTSKLUJrZ+gFtyBmv9f9Xu5aD1AW1pjLWPC9qyA74PYjQz2L2Lu/M9E8a+bq7XUNzB/63QkuJtUKqyEsXG4xL1fPwR14cbGNfUjBgxK/zUtrYvwPKiuvQd4mHzeofTsKIn0p5g2ZTrxGDy/9lAUn2So16X9N2GwuDU3kU6eTFsa1qxbzrx5tzFtmtM4yp8272b6lFup1CCdhmL5h0AHvagxNWTrG5TvO5Fk/G48bwYpJ1wDEfCDv0HkHO4d6MavnEXXZWvp7dUUCgowoBYyte0DiMDadeuApwBNB2HFGKXfz9S2z4XH4bp/Bn7UVPFjkV5aW15FzQdjCsAohV6PTK5GoS9HW+tnQMLY4w3D3Zy2ukI+71AAchnDYP9nicU+jeOA64TXhfM5GsWpwKXk+7pQPY+NeYnq61FY8rfE4rfjuYfjOmH4ogICA4GZw5S2q8kvugR16b0MDbnkchati6C+REsKYjHYsPZZ4NsMDHjMmxdw3PQ2imo5sdhU4h6UyhcD8NhSl2NyPt/sO56k903isVcjQCyqhxEYMObdaLWQwf5e5s7/LPm8oxHWMlIKKJZqDI9sYnh0I5tGNzJarKEUBHYq06Z8mnzftShlyXdtRnZd/lS1U0kmE2wcrrBpuEIqmcJU3zvmmrE7U2OkGDBSDBBGACgWPc65ci2+zKNSFV5cH+Doi7lzYAYdOUOmYMgvfSsx9z1s2OSzdv16krGPoVQod69aFXJCpc4mCAyVcom163y0Pi7k4FF3xsYxmxPuHJiBVt8ENYNiCTZuepR1G5exfuP9jBaHKZUN6dSJ4N2CUtJoDQUgdrgxB6huNUVNqfG9ZbT5g1StY3gkwJj1OHpzR8n84k+QTn2G0aJPuVpl/fozmHvJ0saYMhlDfvEnmdL6aWp+QBDA8Oiv2LDpDjYMf5tSaRPlCmj9Wjz3Qe7tfw29URO9fJeDylnuXfxWYvHvoTgcP4Dh0edZt2GQtRvuZHj0d9RqYOwBJJIF8gPvorMzIJ+PMaf7Z2wavR5jbDTfT24xH6EcP49UYirlss8La/+DTM9tDGVd3j4vIL/49STc76LUqylXoVjewLqN32L9xjsZHV1FEIAfGKa25cj3fYxMxmgQB9dxsYxA4lhq1SPR+iisvJma/49oVWPjcEDcu5JC39FkCpvbXHbUuYY6OxID4qBiEWc9O+Qy26jGrVXYyTv8hPd6zR8C8l0OH+q5h0rlp3iuSyoxnbjtbogYKrgC13NIxD2MXcypF60J425zQi4XcN9trSCnUak6KJ1CRJNOJTBqdjRe3XiRFIJnTyWVnIlYi8iN2BnH0zX/fLp6Poi2x6PVeoyFdHI2hcXt4XG6KnoJo2bN2+ssLqI3fy8TqevgRpVZXAweuZwl3zePVOo6qhWDox2qlXPpWvgthobcBmC/tfj1uN7nGB4xeK6LH/wT9hVHM3f+eXTNPx1jjgF+gRhDIj6DQL7SaKK36ihhKOsS6K/h6Jaw9q35FjX3rXT1dNHVcy7T42/F2BvxXIh5DtreHMm2YeHA1sSXqdY2EgQOifjfcO8t72HevICvfz2BsZcRBAJ4CNkQF+ioJu/1xGJTsWJBfoIjbyPTcwZdPeeyVh+NH3wWz3UZGTFo9f/I3/xavYVkaim5q/nwx15gTvdzZHp+x+zuL+L7XyMec/Fc0PojkYKowyYcOctdSw5FqRNCmU/9CJFHw/+WE8Pc9YJpPja0K+wQrpxrgDCrAS4ln49xf/8hOLoLY4Ry+Xnc5FejaoiGldmwTKgfzCKVOBClwNq7EV6MUtAygGoESG/mhocAYSki698fyWGKfDbG7AW/xTfXYsyPqfmPIG5b+Efte0vtcjiM51jRfybJ+AB+ANpVVKsfIrNwMOwW3hk0XsSaPo9E3CUWc6j6K5hzyReiTutuWPN34e/xzYew4lMqC0qdxoqo11cuZ1l7wIkkE2+j5gvGPIM/ejYfvvgFhqK/77ywwuzuj1Op/pRK9QVgBmwIS3UefLDDqRetwZgvkkwoBMG3n0IpobV6OqnEG3AcRbX2IJmef2NoyCWTqzHYdxhan0KlKlhbxC9/iDPn/4GBAY+hrMu87oA5l2Sp+d/F9RzisRRO7IKx5q7pTgyREqB4bKnD09Msak0BY+cjCqw9pmGKYmVY1cVxziAZT6M1aG5F5EC0fgfJRCvFygeBgaYbWdSj2+dmfkRhyb0kk2eSdA9keN1ZVO0htLQmMQZqtS8y58KNSNpBZQz5fCRny4dRWrC+wpEcRl2HlYNQzttZ0dfOnJ5fR6afiKuxFqU0fhDgxhdxz9LPk+DfOXXen8Lx9FwLXPuSUe75LOCQcY/wh+B8HLePIBC0M0KtuqAB2FD5ZIsX8d0YEyqKruonm9Ws7NUNk9hQ1qWz53fkl/yQVPK9iCSocSwQzlXpU1BKSMQUxdIyMp8o8+iAxzHRc+orNueSv2Hl7XHKZWH0oPDe8+YFrF6tkcoSSvoSPPcwYl4H31xyLMjfo5VQ8y3CpyKTVySmqeNIxEMBtlz5HpmPPTtmbkNDLtmVFvRStD4FPxCsPXEsB/Rr0lC07l9tyGQMnvyRWi1MblTqrxgY8FBKWLkyWix7FgClog/631D6B1QqUU8AOeslCzs+rVoVJtwp9x/x/RrVqkXzRURdjrWWUvkpZiSXhtw7E3YszGQMy288ECUnIaLwzX8ze8FvQcIuN8m4i6hM45QIq4QrEjxAqTxKLOaiOArPWU7Z/JoVAz/h3oGbuG/p3LDhXZNmmd1i1qKerzcV1K1Y0Xieolb9KV0L7iCfjTU2FVSjk7pSBwOKWq2McX9PLme3WncRhdZPhAxGg5FXb/HtEYgojAV4HEExsjoUy749kCJ/63Tu7JtGYWkbm4zHOuJj5Nb2dkXmE2WsfArPUxgjOLqA8E60o/D9u8n0PBbZkMNxKXl12PBEg9Zhn4w3rN4sTtZt7Dr4HZWKiU7zQ8ffiGpQA1U3FseIxZyGWeeeW9+I4xwb8h95lNnznmf4+d/hB09hBRz9N+QXv76xsM1QLmfpzTrM7X6SwCwlHtfAwSh1YFigTffSeWGF9vbQnFZX9GLxD5BMTIkWISz7qfVDVCoGY0BkTlQzIDSOZ7OK0+b/GRucgZgncV1wNCSTU0jGjyMevwzXLZBQvya/uHtCc9h1eyyIxEEpPNelXA1IJmeRX3JRqJS9xE568MFOJAsDqoIthjlfvb3yEg4uIBuppwNqld7i27B/g7GAXo9C+OX08Dk1+0XS3pPE1K9R5vcEtadpS/8vrHt7w26byYS6Ttf8uymVfko8ptDq1Tg6TblSReleRNSYDppKpaOsbLB2dLtOj8AvIlILi0iJN/4muF4ahReKqTLKH/5QI1v3OAVdJCP2rtUdKCVcmKsAK0IAxOMoPWeMEtQchRw05n2eUmkNSlk8TygWH0Wm3zWmWEddGbRyNijC5EW5g0zGMGf+LzD2v8J5uEfxloOOBaRRsE6ymq6FP2DtH4/G2lPwg2spV/6dUnktfhBmyBp7EG1tt5C/5X2RecjZK6DVGoSAau0RPNel5ltisZsYvPnIBkDqpsfVqw1KhaniIglIJLe+aUdkotRtjQxYYYuERglPU61ATGi6PLzBzw9hWttMWlIHk0rOQOkZeM50NN6YRxTaQ/Omda7BSoDYGok4+P4Ac+f/D4XCWNuwUGq0l1IqHVp1OrYeutYpIBbOT/ljgVQqhwXRensVpx0c9gCw6igScSfS4J+JNi5s/BtIhiCASjXAcgGDfd+n0Pd9lHof1arBWBAyiEyscUcu6k5z+sUvYGyBZFzjOgqrbiOTMY0XoK4MDvYdhuO8i2pNCIyP5asU+h9isP97KA7BDwKScbCRuFJ3N9cX8MJchdMvfpDTL76aOZf8HanYURh7Gkb+Ewiw1qLsRQC0PKe28k5ZUWP+X0S9JLvZTFBEAM8VFFciM04gML/G0Rqt0+DdyaMDHoX28Jl1W6vIahAhFkuig9dFMu0WL9jKkNNa+2asDe3w2Ge2eOqfUVHzQO28fux8+CobNl5MsXg+5XKemGep+oJY2UonEVFkun9IpfIE8XiMShWQr4f3K7yENckzEZcFkbeEnHbllu9ZqPDjHE4i4UQr88exoPWc0M+ey1mO6fZDgKp5m9ONo06IuZzFWXssca+dai0sHz99yrG8YvosZkyfxdS2N+M4DpWqEHPfSmFJOKDDNugJchwFVBrcB1t7CfOo328O6WQcYwypZIIZ0zqZMe0kXjHtZNpaX4WIS6UGyBnkr082XqBC/xe5/5//g3sH/p3B/sMZGPD4+tcT/PTZdcye9x2q/llYo7BWodRMAA5I2OjtHw4Lw2ki0UXowKU8PWxSIhwQcTRB2DABh2cInKo/inWXkckYnOA8oIbv12hJv42n/WvJZEzkl9fRUfsfOI5CK0BdTC5nWdMemrIeHfDozAXkb34trttBzReq1QoBP9v8XFmJ1opaAKjzUEo49fIqQ1mXufMf4f1/fxtze5YB00DpqOLj9uVyrcuRFQccJ9SVuqIqj3VZW/MTqlWfmi84zvtYdsNBdOaChvVgJVHciLoIEXC0QumhsdaDBB5DQy6//KXDQc40HOcqPO9kgsAQBDV8e1fDNSvqbGKxUAaq1Z6gUnt6ixKWFlFvxHXeQDzu4AcZ4AlerEwMtEoJhSV6jJFqDGh7DdKrGOz/UNRnTFMu/4BiedOYRVXqnRgzk3j8VdTsCSj1YHS36bSk3onvw/DIx+juXgBs1pZd5wQcrUJg8mcAfrXaAXxEfhWacaoWpS4gv/h2OheGToRv3XggxslQqVriMY2jfhmOdwK9ERQgQRJQnLnwCe5e/EmmtN3ASLFKOn05hcVDdC78Fo8O1I/oZVSq/4BYheedxYpb/os5mRsb97u//xACfSdKJYnHFKXSdzh7wR9Dq0LOUFH3IaWv4LjTibnv4N6BAXyuprN7EwD/mU/y3IbPkYjNolw2Dd1mey9eYQe26bpopnqeZrD/eyRjH6Dmt9HSchcrBs6Oeg6HNDhwNZ5zOr5vEKmB3O6isFhjQLVRsz9m7W8tB3ug1AxiselUfWFam8O6jZ/m7AV/5Mms5tGDXf7XnEatakDANx/i7Ev/e8zA7hk4AcdZSbVqgDPIZj/FKZf5cDlYLSAmEsl2bFnQ2mzz2nxXWLZ9Rd+bcJw3h3OQPzC356St7jHYlyWZ/AzWWsTpAiLQ6sUMD1+EsRrt9FDoa0epRxB8lLQDpyHR4ou+LXSCdASQg0DupVz+EtpJotXbwX2Uwb4fgXLwmYWWV+LFFOXyc6T8H0SnxvhWFFFhXTMwODo8+QYGPD7U/VUG+99HOnEy1VoNN7aU/OKfckz38wwMeMzt/h8KfZ9l2tTPsmmTwfO+ymDfOZEloI2aOhFHz0RrqNY2AddEdm5LPq/JZDaQ77uU1sRdjJSEeGwepnoKg/0/RMRn9bpjaUm9KTzuVRC5kmX8eQi4nmz3JP1W/5XUgg6UbkHJCRj7BIN9PwBGQb2dmPM2fN8wdYrD+g2foWvB0y4whUTCwVoHz319IyDHGAgC8Nwi6zZ8icyC68lnY2RyNd7cP5tpU14LwIZNj/Hk2t8zNOSyZk3oTm1vF0afeZRkeg1tLTNJ6zfyZn1yg8OJ8Ui2hj0XKpXUOCJCkmTSwQqUarHG72ceFcmW6hKmt3kIsG79/QiK794UY/SggMM2aJ6eZnE2fQeRXlwXqJ7L8lv/kQ9f/CJndv+KfP9HSLj9OG4rrnMCWp/QEEdCZSxgtPRJMj1DZLOazs4g5BIL/kih7yN43u0oJ4VSR+C5RyCEMRtKgTHrsJzLqZcPI+t1c+F10koy6VCqTMV1VKRohfbXwi1/T81/nHh8JvHYAWzcdD/33XYip/+xyOqsS1fP5yj0txL3rgIF6dQxaOeYkLEE4ZgC8yyV8tmcffnTyAubYw9CC8A3uXvJVBLx60DSJOKH4rnnRooSjJaKBMFlKLJMmfIq1qzbPjfVtJBMOigNfnlrrqxyFkFzRu535Jd8gHj8Dhz3lTjOAXhuqFQbE35cT7NuwxfILLiOfN5xERZTLKfBCuUtOIHjWrT6A375X8lE7dlpN5Fur6nWBhCjQD1ALmdp/83mXrShclBkRf+nKVffhucKqNgWG/MHSuUBXF9ho7bzHS/hQvX/V2qIYtFFlKDsrxrfqZw0FIhNxYHwXfNuQyFk1/vkLrcRZxMGBn7JtOKX0e5UHK1xg1cAobenc/6dLF/8BC26m2rt3Vh7IIKDVhtw3cfwKwNkFv5oTFSUahxvBb656CmS8YVYOZ5yZToowdVrcPSPKJZv5uxL/7uhMDYnEn2dYumVoMrUTDE6Tg3tv9FkCn8mv/h8vNiZrN9YJe61Uiofjsr9HMkCWU3X/Ku5Z+BhHPVRSv7RiJ2C0n4YpaW+z/DIYs77+HNbRXltLlt0C/nFPyGeWIAN3kmlOh2linjOo/jVG8lc+mMKt8ykVD4M669u2NbHOkZAWE6p/F9Ua4Jy14S/7JUxna9VzkbP/CHLFx1HKrkQMSdTrR2EWA/tbMRRP6dmbyWz4Ad1q9H/B6A3egH0ALOpAAAAAElFTkSuQmCC" alt="大安工業株式会社">
+    <span class="header-div"></span>
+    <span class="header-title">彫刻シミュレーター</span>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ========== 左：操作 ========== -->
+  <div class="col col-left scroll">
+
+    <section class="s-plate">
+      <div class="sec-head"><span class="sec-num">STEP 01</span><h2 class="sec-title">プレートを選ぶ</h2></div>
+      <div class="plate-list">
+        <button class="plate-btn active" data-plate="circle" onclick="selectPlate('circle')">
+          <span class="plate-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10.5"/><circle cx="12" cy="4.6" r="1.5"/></svg></span>
+          <span><span class="plate-name">円形</span><span class="plate-dim">50 × 50 mm</span></span>
+          <span class="plate-check"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 10.5 8 14.5 16 6"/></svg></span>
+        </button>
+        <button class="plate-btn" data-plate="dogtag" onclick="selectPlate('dogtag')">
+          <span class="plate-icon"><svg width="18" height="28" viewBox="0 0 18 28" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M9 .8 C13.4 .8 16.6 3.6 17.1 7.2 L17.1 20.8 C16.6 24.4 13.4 27.2 9 27.2 C4.6 27.2 1.4 24.4 .9 20.8 L.9 7.2 C1.4 3.6 4.6 .8 9 .8Z"/><circle cx="9" cy="4.3" r="1.4"/></svg></span>
+          <span><span class="plate-name">ドッグタグ</span><span class="plate-dim">40 × 66 mm</span></span>
+          <span class="plate-check"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 10.5 8 14.5 16 6"/></svg></span>
+        </button>
+        <button class="plate-btn" data-plate="bar" onclick="selectPlate('bar')">
+          <span class="plate-icon"><svg width="28" height="10" viewBox="0 0 28 10" fill="none" stroke="currentColor" stroke-width="1.2"><rect x=".6" y=".6" width="26.8" height="8.8" rx="1.8"/><circle cx="4.2" cy="5" r="1.3"/></svg></span>
+          <span><span class="plate-name">細長タグ</span><span class="plate-dim">90 × 20 mm</span></span>
+          <span class="plate-check"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 10.5 8 14.5 16 6"/></svg></span>
+        </button>
+      </div>
+    </section>
+
+    <section class="s-upload">
+      <div class="sec-head"><span class="sec-num">STEP 02</span><h2 class="sec-title">画像を選ぶ</h2></div>
+      <label class="upload" id="uploadArea">
+        <input type="file" id="imgInput" accept="image/*" hidden onchange="loadImage(event)">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span class="upload-main">クリックして選択</span>
+        <span class="upload-sub">JPG / PNG / SVG<br>長辺 1000px 以上・10MB 以下</span>
+        <span class="file-name" id="fileName" style="display:none"></span>
+      </label>
+    </section>
+
+    <section class="s-size">
+      <div class="sec-head"><span class="sec-num">STEP 03</span><h2 class="sec-title">大きさを決める</h2></div>
+      <div class="slider-row">
+        <input type="range" id="sizeSlider" min="10" max="100" value="70" oninput="updateSize(this.value)">
+        <span class="slider-val" id="sizeVal">70%</span>
+      </div>
+      <div class="scale-ends"><span>小さく</span><span>長辺いっぱい</span></div>
+    </section>
+
+    <section class="s-density">
+      <div class="sec-head"><span class="sec-num">STEP 04</span><h2 class="sec-title">濃さを調整する</h2></div>
+      <div class="slider-row">
+        <input type="range" id="densitySlider" min="-100" max="100" value="0" oninput="updateDensity(this.value)">
+        <span class="slider-val" id="densityVal">±0</span>
+      </div>
+      <div class="scale-ends"><span>明るく</span><span>暗く</span></div>
+    </section>
+
+    <section class="s-pos">
+      <div class="sec-head"><span class="sec-num">STEP 05</span><h2 class="sec-title">位置を合わせる</h2></div>
+      <div class="pad">
+        <button class="ghost"></button>
+        <button onclick="nudge(0,-1)" aria-label="上へ1mm"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5l5 8H3z"/></svg></button>
+        <button class="ghost"></button>
+        <button onclick="nudge(-1,0)" aria-label="左へ1mm"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 8l8-5v10z"/></svg></button>
+        <button onclick="alignTo('center')" aria-label="中央に戻す"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="3.2"/><rect x="7.3" y="0" width="1.4" height="3"/><rect x="7.3" y="13" width="1.4" height="3"/><rect x="0" y="7.3" width="3" height="1.4"/><rect x="13" y="7.3" width="3" height="1.4"/></svg></button>
+        <button onclick="nudge(1,0)" aria-label="右へ1mm"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M12.5 8l-8 5V3z"/></svg></button>
+        <button class="ghost"></button>
+        <button onclick="nudge(0,1)" aria-label="下へ1mm"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12.5l-5-8h10z"/></svg></button>
+        <button class="ghost"></button>
+      </div>
+      <div class="align-row">
+        <button onclick="alignTo('top')"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><line x1="2.5" y1="3" x2="17.5" y2="3" stroke-width="1.8"/><rect x="6.5" y="6" width="7" height="11" fill="currentColor" fill-opacity=".18"/></svg><span>上</span></button>
+        <button onclick="alignTo('bottom')"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><line x1="2.5" y1="17" x2="17.5" y2="17" stroke-width="1.8"/><rect x="6.5" y="3" width="7" height="11" fill="currentColor" fill-opacity=".18"/></svg><span>下</span></button>
+        <button onclick="alignTo('left')"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><line x1="3" y1="2.5" x2="3" y2="17.5" stroke-width="1.8"/><rect x="6" y="6.5" width="11" height="7" fill="currentColor" fill-opacity=".18"/></svg><span>左</span></button>
+        <button onclick="alignTo('right')"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><line x1="17" y1="2.5" x2="17" y2="17.5" stroke-width="1.8"/><rect x="3" y="6.5" width="11" height="7" fill="currentColor" fill-opacity=".18"/></svg><span>右</span></button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ========== 右：結果・入稿 ========== -->
+  <div class="col col-right scroll">
+
+    <section class="s-preview">
+      <div class="preview-head">
+        <div class="sec-head"><h2 class="sec-title">仕上がりプレビュー</h2></div>
+        <div class="seg">
+          <button class="seg-btn active" id="segData" onclick="setView('data')">彫刻データ</button>
+          <button class="seg-btn" id="segFinish" onclick="setView('finish')">仕上がりイメージ</button>
+        </div>
+      </div>
+      <div class="stage"><canvas id="previewCanvas"></canvas></div>
+      <div class="legend">
+        <div id="legendData">
+          <div class="gradient-bar"></div>
+          <div class="gradient-labels"><span>深く彫る</span><span>浅く彫る</span><span>彫らない</span></div>
+        </div>
+        <div id="legendFinish" style="display:none">
+          <p class="legend-note">鏡面仕上げのステンレスにレーザー彫刻した状態のイメージです。実際の色味・映り込みは素材や光の当たり方により異なります。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s-spec">
+      <div class="sec-head"><h2 class="sec-title">仕様</h2></div>
+      <div class="spec">
+        <div class="spec-row"><span class="spec-key">プレート</span><span class="spec-val" id="specPlate">円形</span></div>
+        <div class="spec-row"><span class="spec-key">プレートサイズ</span><span class="spec-val" id="specSize">50 × 50 mm</span></div>
+        <div class="spec-row"><span class="spec-key">穴径</span><span class="spec-val" id="specHole">ø4 mm</span></div>
+        <div class="spec-row"><span class="spec-key">彫刻の実寸</span><span class="spec-val" id="specReal">—</span></div>
+        <div class="spec-row"><span class="spec-key">中央からのズレ</span><span class="spec-val" id="specPos">0.0 / 0.0 mm</span></div>
+        <div class="spec-row"><span class="spec-key">画像解像度</span><span class="spec-val" id="specDpi">—</span></div>
+      </div>
+      <div class="notice notice-info" id="noticeInfo">画像を選ぶと仕上がりイメージが表示されます。</div>
+      <div class="notice notice-warn" id="noticeDpi" style="display:none"></div>
+    </section>
+
+    <section class="s-form">
+      <div class="sec-head"><h2 class="sec-title">入稿する</h2></div>
+      <div class="form-panel">
+        <div class="form-grid">
+          <label class="fld"><span>お名前 <em class="req">*</em></span><input type="text" id="fName" placeholder="山田 太郎" autocomplete="name"></label>
+          <label class="fld"><span>メールアドレス <em class="req">*</em></span><input type="email" id="fMail" placeholder="example@mail.com" autocomplete="email"></label>
+          <label class="fld full"><span>備考</span><textarea id="fNote" placeholder="ご要望などがあればご記入ください"></textarea></label>
+        </div>
+        <button class="btn btn-primary" id="submitBtn" onclick="submitOrder()" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          この内容で入稿する
+        </button>
+        <button class="btn btn-secondary" id="saveBtn" onclick="downloadPNG()" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          入稿データを保存する
+        </button>
+        <p class="form-foot">ご購入前・ご購入後どちらでも入稿いただけます。お名前とメールアドレスでご注文と照合します。</p>
+      </div>
+      <div class="notice notice-ok"  id="noticeOk"  style="display:none"></div>
+      <div class="notice notice-err" id="noticeErr" style="display:none"></div>
+    </section>
+
+    <section class="s-credit">
+      <div class="credit">
+        大安工業株式会社　〒529-1541 滋賀県東近江市蒲生堂町48番地　<a href="https://daiyasu-k.jp/" target="_blank" rel="noopener">daiyasu-k.jp</a>
+      </div>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<script>
+/* ================================================================
+   設定
+   ================================================================ */
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbw13foXsYbVmYvM1Txp_fjRiyYB37D7qg5pRKxF9LPWkaDF202e4tgVhrhOdr09mgDBOw/exec";
+
+const HOLE_D      = 4;
+const HOLE_MARGIN = 3;
+
+const PLATES = {
+  circle: { name:"円形",       shape:"circle", w:50, h:50,
+            hole:{x:0, y:-25 + HOLE_MARGIN + HOLE_D/2} },
+  dogtag: { name:"ドッグタグ", shape:"dogtag", w:40, h:66, bigD:56, fillet:5,
+            hole:{x:0, y:-33 + HOLE_MARGIN + HOLE_D/2} },
+  bar:    { name:"細長タグ",   shape:"round",  w:90, h:20, r:2,
+            hole:{x:-45 + HOLE_MARGIN + HOLE_D/2, y:0} }
+};
+
+const VIEW_PPM   = 14;
+const EXPORT_PPM = 40;
+const ART_MARGIN = 8;
+const MAX_MB     = 10;
+/* ================================================================ */
+
+const ART_W = Math.max(...Object.values(PLATES).map(p=>p.w)) + ART_MARGIN*2;
+const ART_H = Math.max(...Object.values(PLATES).map(p=>p.h)) + ART_MARGIN*2;
+
+let plateKey = "circle";
+let img = null;
+let scalePct = 70;
+let density = 0;
+let offX = 0, offY = 0;
+let view = "data";            // data | finish
+
+const canvas = document.getElementById("previewCanvas");
+
+/* ---------------- 形状 ---------------- */
+function dogtagPath(c, cx, cy, ppm, p){
+  const hw = p.w/2, hh = p.h/2;
+  const R  = p.bigD/2, rf = p.fillet;
+  const Ct = -hh + R, Cb = hh - R;
+  const fx = hw - rf, d = R - rf;
+  const dy = Math.sqrt(d*d - fx*fx);
+  const a  = Math.atan2(-dy, fx);
+  const X = v => cx + v*ppm, Y = v => cy + v*ppm;
+
+  c.beginPath();
+  c.arc(X(0),   Y(Ct),      R*ppm,  -Math.PI/2,   a,           false);
+  c.arc(X(fx),  Y(Ct - dy), rf*ppm, a,            0,           false);
+  c.lineTo(X(hw), Y(Cb + dy));
+  c.arc(X(fx),  Y(Cb + dy), rf*ppm, 0,            -a,          false);
+  c.arc(X(0),   Y(Cb),      R*ppm,  -a,           Math.PI/2,   false);
+  c.arc(X(0),   Y(Cb),      R*ppm,  Math.PI/2,    Math.PI + a, false);
+  c.arc(X(-fx), Y(Cb + dy), rf*ppm, Math.PI + a,  Math.PI,     false);
+  c.lineTo(X(-hw), Y(Ct - dy));
+  c.arc(X(-fx), Y(Ct - dy), rf*ppm, Math.PI,      Math.PI - a, false);
+  c.arc(X(0),   Y(Ct),      R*ppm,  Math.PI - a,  3*Math.PI/2, false);
+  c.closePath();
+}
+
+function platePath(c, cx, cy, ppm){
+  const p = PLATES[plateKey];
+  if(p.shape === "circle"){
+    c.beginPath(); c.arc(cx, cy, (p.w/2)*ppm, 0, Math.PI*2); c.closePath();
+  }else if(p.shape === "dogtag"){
+    dogtagPath(c, cx, cy, ppm, p);
+  }else{
+    c.beginPath();
+    c.roundRect(cx-(p.w/2)*ppm, cy-(p.h/2)*ppm, p.w*ppm, p.h*ppm, p.r*ppm);
+    c.closePath();
+  }
+}
+
+/* ---------------- ステンレス風テクスチャ ---------------- */
+let steelCache = null;
+function steelTexture(cw, ch){
+  if(steelCache && steelCache.w === cw && steelCache.h === ch) return steelCache.cv;
+  const cv = document.createElement("canvas");
+  cv.width = cw; cv.height = ch;
+  const x = cv.getContext("2d");
+
+  /* --- 1. 環境の映り込み ---
+     鏡面ステンレスは周囲を映す。上＝天井の明かり、中央やや下＝
+     暗い水平線（撮影者・室内）、下＝机からの照り返し、という構成。
+     ステンレスは青味を帯びて映るのでわずかに寒色へ寄せている。 */
+  const env = x.createLinearGradient(cw*0.18, 0, cw*0.34, ch);
+  env.addColorStop(0.00, "#dfe4e8");
+  env.addColorStop(0.07, "#f2f5f7");
+  env.addColorStop(0.15, "#fafcfd");
+  env.addColorStop(0.24, "#dbe0e5");
+  env.addColorStop(0.34, "#b3bac1");
+  env.addColorStop(0.44, "#949ba3");
+  env.addColorStop(0.51, "#848b93");
+  env.addColorStop(0.57, "#9ba2a9");
+  env.addColorStop(0.66, "#c3c9cf");
+  env.addColorStop(0.76, "#e2e6ea");
+  env.addColorStop(0.86, "#f4f6f8");
+  env.addColorStop(0.94, "#d2d7dc");
+  env.addColorStop(1.00, "#b0b6bc");
+  x.fillStyle = env; x.fillRect(0, 0, cw, ch);
+
+  /* --- 2. 光源のスペキュラ（対角にゆるく走る帯） --- */
+  const sp = x.createLinearGradient(0, ch*0.92, cw, ch*0.06);
+  sp.addColorStop(0.00, "rgba(255,255,255,0)");
+  sp.addColorStop(0.30, "rgba(255,255,255,0)");
+  sp.addColorStop(0.40, "rgba(255,255,255,.14)");
+  sp.addColorStop(0.47, "rgba(255,255,255,.34)");
+  sp.addColorStop(0.54, "rgba(255,255,255,.12)");
+  sp.addColorStop(0.66, "rgba(255,255,255,0)");
+  x.fillStyle = sp; x.fillRect(0, 0, cw, ch);
+
+  /* --- 3. 左上の光だまり --- */
+  const gl = x.createRadialGradient(cw*0.24, ch*0.14, 0, cw*0.24, ch*0.14, Math.max(cw,ch)*0.7);
+  gl.addColorStop(0.00, "rgba(255,255,255,.30)");
+  gl.addColorStop(0.45, "rgba(255,255,255,.07)");
+  gl.addColorStop(1.00, "rgba(255,255,255,0)");
+  x.fillStyle = gl; x.fillRect(0, 0, cw, ch);
+
+  /* --- 4. 周辺減光 --- */
+  const vg = x.createRadialGradient(cw*0.5, ch*0.45, Math.min(cw,ch)*0.22,
+                                    cw*0.5, ch*0.5,  Math.max(cw,ch)*0.78);
+  vg.addColorStop(0.00, "rgba(16,20,24,0)");
+  vg.addColorStop(0.72, "rgba(16,20,24,.06)");
+  vg.addColorStop(1.00, "rgba(16,20,24,.24)");
+  x.fillStyle = vg; x.fillRect(0, 0, cw, ch);
+
+  /* --- 5. 微細なノイズ ---
+     グラデーションの階調段差（バンディング）を散らして、
+     金属らしい粒状感を出す。 */
+  const d = x.getImageData(0, 0, cw, ch), px = d.data;
+  for(let i = 0; i < px.length; i += 4){
+    const n = (Math.random() - 0.5) * 7;
+    px[i]   = Math.max(0, Math.min(255, px[i]   + n));
+    px[i+1] = Math.max(0, Math.min(255, px[i+1] + n));
+    px[i+2] = Math.max(0, Math.min(255, px[i+2] + n * 1.1));
+  }
+  x.putImageData(d, 0, 0);
+
+  steelCache = { w:cw, h:ch, cv };
+  return cv;
+}
+
+/* ---------------- 画像レイヤー ---------------- */
+function imageSizeMM(){
+  if(!img) return {w:0,h:0};
+  const p = PLATES[plateKey];
+  const base = Math.max(p.w,p.h) / Math.max(img.width,img.height);
+  const r = base * scalePct/100;
+  return { w: img.width*r, h: img.height*r };
+}
+
+/* mode:"data"   → 白地にグレースケール
+   mode:"finish" → 暗い彫刻痕（濃さ＝アルファ） */
+function markLayer(ppm, cw, ch, cx, cy, mode){
+  const mm = imageSizeMM();
+  const iw = mm.w*ppm, ih = mm.h*ppm;
+  const ix = cx - iw/2 + offX*ppm, iy = cy - ih/2 + offY*ppm;
+
+  const off = document.createElement("canvas");
+  off.width = cw; off.height = ch;
+  const oc = off.getContext("2d");
+  oc.imageSmoothingEnabled = true;
+  oc.imageSmoothingQuality = "high";
+  oc.drawImage(img, ix, iy, iw, ih);
+
+  const d = oc.getImageData(0,0,cw,ch), px = d.data;
+  const gamma = Math.pow(2.6, density/100);
+  const lut = new Uint8Array(256);
+  for(let v=0; v<256; v++) lut[v] = Math.round(255*Math.pow(v/255, gamma));
+
+  for(let i=0;i<px.length;i+=4){
+    const a = px[i+3];
+    if(a === 0) continue;
+    const g = lut[Math.round(0.299*px[i] + 0.587*px[i+1] + 0.114*px[i+2])];
+    if(mode === "data"){
+      px[i] = px[i+1] = px[i+2] = g;
+    }else{
+      const dark = 255 - g;                         // 黒いほど深く彫れている
+      px[i]   = 38;  px[i+1] = 39;  px[i+2] = 42;
+      px[i+3] = Math.round(a * (dark/255) * 0.94);
+    }
+  }
+  oc.putImageData(d,0,0);
+  return off;
+}
+
+/* ---------------- 描画 ---------------- */
+function drawPlate(c, ppm, cw, ch, mode){
+  const p = PLATES[plateKey];
+  const cx = cw/2, cy = ch/2;
+
+  if(mode === "export"){
+    c.save();
+    platePath(c, cx, cy, ppm);
+    c.fillStyle = "#fff"; c.fill(); c.clip();
+    if(img) c.drawImage(markLayer(ppm,cw,ch,cx,cy,"data"), 0, 0);
+    c.restore();
+    c.save();
+    c.globalCompositeOperation = "destination-out";
+    c.beginPath();
+    c.arc(cx + p.hole.x*ppm, cy + p.hole.y*ppm, (HOLE_D/2)*ppm, 0, Math.PI*2);
+    c.fill();
+    c.restore();
+    return;
+  }
+
+  if(mode === "data"){
+    /* 書き出しデータと同じ構成：白＝彫らない／黒＝彫る／外は透過 */
+    c.clearRect(0,0,cw,ch);
+
+    c.save();
+    c.shadowColor = "rgba(0,0,0,.5)";
+    c.shadowBlur = 20; c.shadowOffsetY = 8;
+    platePath(c, cx, cy, ppm);
+    c.fillStyle = "#fff"; c.fill();
+    c.restore();
+
+    c.save();
+    platePath(c, cx, cy, ppm);
+    c.clip();
+    if(img) c.drawImage(markLayer(ppm,cw,ch,cx,cy,"data"), 0, 0);
+    c.restore();
+
+    c.save();
+    c.globalCompositeOperation = "destination-out";
+    c.beginPath();
+    c.arc(cx + p.hole.x*ppm, cy + p.hole.y*ppm, (HOLE_D/2)*ppm, 0, Math.PI*2);
+    c.fill();
+    c.restore();
+    return;
+  }
+
+  /* finish：暗い舞台にステンレスのプレートが浮く */
+  c.clearRect(0,0,cw,ch);
+
+  // 落ち影
+  c.save();
+  c.shadowColor = "rgba(0,0,0,.55)";
+  c.shadowBlur = 22; c.shadowOffsetY = 10;
+  platePath(c, cx, cy, ppm);
+  c.fillStyle = "#000"; c.fill();
+  c.restore();
+
+  // 金属面＋彫刻
+  c.save();
+  platePath(c, cx, cy, ppm);
+  c.clip();
+  c.drawImage(steelTexture(cw, ch), 0, 0);
+  if(img) c.drawImage(markLayer(ppm,cw,ch,cx,cy,"finish"), 0, 0);
+  c.restore();
+
+  // 穴を抜く
+  c.save();
+  c.globalCompositeOperation = "destination-out";
+  c.beginPath();
+  c.arc(cx + p.hole.x*ppm, cy + p.hole.y*ppm, (HOLE_D/2)*ppm, 0, Math.PI*2);
+  c.fill();
+  c.restore();
+
+  // 穴のふち／外周のハイライト
+  c.save();
+  c.beginPath();
+  c.arc(cx + p.hole.x*ppm, cy + p.hole.y*ppm, (HOLE_D/2)*ppm, 0, Math.PI*2);
+  c.strokeStyle = "rgba(255,255,255,.35)"; c.lineWidth = Math.max(1, ppm*0.07); c.stroke();
+  platePath(c, cx, cy, ppm);
+  c.strokeStyle = "rgba(255,255,255,.42)"; c.lineWidth = Math.max(1, ppm*0.09); c.stroke();
+  c.restore();
+}
+
+function setView(v){
+  view = v;
+  segFinish.classList.toggle("active", v === "finish");
+  segData.classList.toggle("active",  v === "data");
+  legendFinish.style.display = v === "finish" ? "" : "none";
+  legendData.style.display   = v === "data"   ? "" : "none";
+  render();
+}
+
+function artboardMM(){
+  const p = PLATES[plateKey];
+  if(window.innerWidth <= 900){
+    const m = 6;
+    return { w: p.w + m*2, h: p.h + m*2 };
+  }
+  return { w: ART_W, h: ART_H };
+}
+
+function render(){
+  const ppm = VIEW_PPM;
+  const ab = artboardMM();
+  const cw = Math.round(ab.w*ppm), ch = Math.round(ab.h*ppm);
+  canvas.width = cw; canvas.height = ch;
+  const c = canvas.getContext("2d");
+
+  drawPlate(c, ppm, cw, ch, view);
+
+  const stage = canvas.parentElement;
+  const cs = getComputedStyle(stage);
+  const padX = parseFloat(cs.paddingLeft)*2, padY = parseFloat(cs.paddingTop)*2;
+  const mobile = window.innerWidth <= 900;
+  const availW = Math.max(stage.clientWidth - padX, 120);
+  const availH = mobile ? Math.max(stage.clientHeight - padY, 160)
+                        : Math.max(window.innerHeight - 430, 260);
+  const s = Math.min(availW/cw, availH/ch, 1);
+  canvas.style.width  = Math.round(cw*s) + "px";
+  canvas.style.height = Math.round(ch*s) + "px";
+
+  if(!img){
+    c.fillStyle = "rgba(255,255,255,.45)";
+    c.font = "500 20px 'Noto Sans JP',sans-serif";
+    c.textAlign = "center"; c.textBaseline = "middle";
+    c.fillText("画像を選んでください", cw/2, ch/2);
+  }
+  updateSpec();
+}
+
+function selectPlate(k){
+  plateKey = k;
+  document.querySelectorAll(".plate-btn").forEach(b=>b.classList.toggle("active", b.dataset.plate===k));
+  const p = PLATES[k];
+  specPlate.textContent = p.name;
+  specSize.textContent  = p.w + " × " + p.h + " mm";
+  specHole.textContent  = "ø" + HOLE_D + " mm（端から " + HOLE_MARGIN + "mm）";
+  offX = 0; offY = 0;
+  steelCache = null;
+  render();
+}
+
+function loadImage(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  if(f.size > MAX_MB*1024*1024){
+    noticeErr.textContent = "ファイルサイズが " + MAX_MB + "MB を超えています。圧縮してからお試しください。";
+    noticeErr.style.display = "block"; return;
+  }
+  noticeErr.style.display = "none";
+  const rd = new FileReader();
+  rd.onload = ev=>{
+    const i = new Image();
+    i.onload = ()=>{
+      img = i; offX = 0; offY = 0;
+      fileName.textContent = f.name;
+      fileName.style.display = "block";
+      uploadArea.classList.add("has-file");
+      noticeInfo.style.display = "none";
+      submitBtn.disabled = false;
+      saveBtn.disabled = false;
+      render();
+    };
+    i.src = ev.target.result;
+  };
+  rd.readAsDataURL(f);
+}
+
+function updateSize(v){ scalePct = +v; sizeVal.textContent = v+"%"; render(); }
+function updateDensity(v){
+  density = +v;
+  densityVal.textContent = (v>0?"+":v<0?"":"±") + v;
+  render();
+}
+function nudge(dx,dy){ offX += dx; offY += dy; render(); }
+
+function alignTo(mode){
+  const p = PLATES[plateKey], mm = imageSizeMM();
+  if(mode==="center"){ offX = 0; offY = 0; }
+  else if(mode==="top")    offY = -(p.h/2 - mm.h/2);
+  else if(mode==="bottom") offY =  (p.h/2 - mm.h/2);
+  else if(mode==="left")   offX = -(p.w/2 - mm.w/2);
+  else if(mode==="right")  offX =  (p.w/2 - mm.w/2);
+  render();
+}
+
+function updateSpec(){
+  const mm = imageSizeMM();
+  specReal.textContent = img ? (mm.w.toFixed(1)+" × "+mm.h.toFixed(1)+" mm") : "—";
+  specPos.textContent  = offX.toFixed(1)+" / "+offY.toFixed(1)+" mm";
+
+  if(img && mm.w > 0){
+    const dpi = Math.round(img.width / (mm.w/25.4));
+    specDpi.textContent = dpi + " dpi";
+    if(dpi < 300){
+      specDpi.className = "spec-val warn";
+      noticeDpi.textContent = "画像の解像度が "+dpi+"dpi と低いため、彫刻が粗くなる可能性があります。300dpi 以上を推奨します。";
+      noticeDpi.style.display = "block";
+    }else{
+      specDpi.className = "spec-val";
+      noticeDpi.style.display = "none";
+    }
+  }else{
+    specDpi.textContent = "—";
+    specDpi.className = "spec-val";
+    noticeDpi.style.display = "none";
+  }
+}
+
+/* 書き出しは常に彫刻データ（白＝彫らない／黒＝彫る） */
+function exportCanvas(){
+  const ppm = EXPORT_PPM, p = PLATES[plateKey];
+  const cw = Math.round(p.w*ppm), ch = Math.round(p.h*ppm);
+  const ex = document.createElement("canvas");
+  ex.width = cw; ex.height = ch;
+  drawPlate(ex.getContext("2d"), ppm, cw, ch, "export");
+  return ex;
+}
+
+function downloadPNG(){
+  if(!img) return;
+  const p = PLATES[plateKey];
+  const a = document.createElement("a");
+  a.download = "daiyasu_"+plateKey+"_"+p.w+"x"+p.h+"mm.png";
+  a.href = exportCanvas().toDataURL("image/png");
+  a.click();
+}
+
+async function submitOrder(){
+  if(!img) return;
+  const name = fName.value.trim(), mail = fMail.value.trim(), note = fNote.value.trim();
+  noticeErr.style.display = "none"; noticeOk.style.display = "none";
+
+  if(!name || !mail){
+    noticeErr.textContent = "お名前とメールアドレスを入力してください。";
+    noticeErr.style.display = "block"; return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "送信中...";
+
+  const mm = imageSizeMM();
+  const payload = {
+    name, mail, note,
+    plate: PLATES[plateKey].name,
+    plateKey,
+    plateSize: PLATES[plateKey].w+"x"+PLATES[plateKey].h+"mm",
+    scale: scalePct+"%",
+    density: (density>0?"+":"")+density,
+    engraveSize: mm.w.toFixed(1)+"x"+mm.h.toFixed(1)+"mm",
+    offset: offX.toFixed(1)+"/"+offY.toFixed(1)+"mm",
+    image: exportCanvas().toDataURL("image/png")
+  };
+
+  try{
+    await fetch(ENDPOINT, {
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
+    });
+    noticeOk.innerHTML = "入稿を受け付けました。ご注文と照合のうえ、2営業日以内に発送いたします。<br>控えとして入稿データもダウンロードしました。";
+    noticeOk.style.display = "block";
+    downloadPNG();
+    submitBtn.textContent = "入稿済み";
+  }catch(err){
+    noticeErr.innerHTML = "送信に失敗しました。お手数ですが「入稿データを保存する」から保存のうえ、メールにてお送りください。";
+    noticeErr.style.display = "block";
+    submitBtn.disabled = false;
+    submitBtn.textContent = "この内容で入稿する";
+  }
+}
+
+function syncHeaderHeight(){
+  const h = document.querySelector("header").offsetHeight;
+  document.documentElement.style.setProperty("--head-h", h + "px");
+}
+
+let rt;
+window.addEventListener("resize", ()=>{
+  clearTimeout(rt);
+  rt = setTimeout(()=>{ syncHeaderHeight(); steelCache = null; if(canvas.width) render(); }, 120);
+});
+window.addEventListener("load", ()=>{ syncHeaderHeight(); render(); });
+
+syncHeaderHeight();
+selectPlate("circle");
+</script>
+</body>
+</html>
