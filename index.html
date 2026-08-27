@@ -413,8 +413,6 @@ const ART_H = Math.max(...Object.values(PLATES).map(p=>p.h)) + ART_MARGIN*2;
 
 let plateKey = "circle";
 let img = null;
-let srcDataUrl = "";      // アップロードされた元画像（そのまま）
-let srcFileName = "";
 let scalePct = 70;
 let density = 0;
 let offX = 0, offY = 0;
@@ -727,8 +725,6 @@ function loadImage(e){
     const i = new Image();
     i.onload = ()=>{
       img = i; offX = 0; offY = 0;
-      srcDataUrl = ev.target.result;
-      srcFileName = f.name;
       fileName.textContent = f.name;
       fileName.style.display = "block";
       uploadArea.classList.add("has-file");
@@ -825,9 +821,7 @@ async function submitOrder(){
     density: (density>0?"+":"")+density,
     engraveSize: mm.w.toFixed(1)+"x"+mm.h.toFixed(1)+"mm",
     offset: offX.toFixed(1)+"/"+offY.toFixed(1)+"mm",
-    image: exportCanvas().toDataURL("image/png"),
-    source: srcDataUrl,
-    sourceName: srcFileName
+    image: exportCanvas().toDataURL("image/png")
   };
 
   /* Apps Script は CORS ヘッダーを返さないため no-cors で送る。
