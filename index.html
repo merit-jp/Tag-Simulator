@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>彫刻シミュレーター | 大安工業株式会社</title>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEOklEQVR42u2XTWxVRRTHfzNz733vlT6hIK+BFoRK0kgiJqWAYAhSvkswJQKJMbpzUxNxJ0uXmrjBKHHBRkhIoBo/acXUKmrEAEHTBAFBhTbFfkgfodC+d++dOS5e+2oLCNG0uuhJZjMzZ/7/OWfOf2YUAE1vbiGRfI3ILsY5AygmxgStLb75iXxuDztfalG8t28TRn+MMQG5cOKgRylAMgBrQ6x7SiOytwCetxMOznBsc3mLMQEiezVQTS4UlDJMlillyIUCVOthVorJtmFMzX9sUwSmCHjjS1QphYiglCr2AViRAuPhcRm/E6UoTCn4OpExYwpwd/AbQ0DEIbEDrREbF9BFQCm0n8A5h4tjMAaUGkPcxVGhT6nCGp5XBHfWgotBG7TxxpAz7Nr6qlEKiSPqK6t4p7aO/ijk4OMbeeHhJWyuWMgNa7l4rZvqstkcXrWZX24N0HXzOtqMatenq7cxM5ki7SfYv2wdn3V3MGgjJI5YkC7j0MotbK9cxBfdnQzZuBhhXdQE55hfkqYuU0Ha8/GUwleK9eXzaFm9jcZHahmIItZlKlkxK4MLc3jaIDYm0Iatcx5iXqqUitQ06jIVPOAHSD5HVbqM4082sLF8HvsutfNH7hZK62IqxqRgyMZYEU5le1nafBCMT8ozHFpVz1s1a/jg6m9839/Dnuoamq9e5ny2j8B4vPHYKkJnOXDlPLVl5VgR+vJDzE3P4Hjd08wMEixvPcKZvi50IjUmBd54dTSq0LQf4HsBQ/khXmn/joa5C1mbqeT5E8c4s+kZzm1+lvZsH+UlpZQnUpzK9nK2u5MN5fPRSrG0LMP+2rUktWF5axNnsz14iRJicf+gDJVCgLTnc7G/h6WtR9h7sZ0cwuWbNziV7aVmxmzqqxZzPcqPVlTx/r1PHRAEK4XmopB8mCfl+7z+6EoU0Pz7FTAeP/f38vKJFlYcPcDjze+yvLWJWBz1cxYwZC1OhNPZXp5oPULOOU6u30nNrDnE+UG0Uncvw5TxMEqxrCzD4RUbUCiq0tOZ7gW8eOY4AD/UP1con+GoOHGUegEJbTh69TIVJaUYpZidSHHpWjdr2t7ny7XbObl+Fxu//oi27g605xfPgR7ZOVrTMThAW28XA3FELEIkQmtPJ1u++YR9506T9gMicYTiyDlL3llCJ/TkBtn947e0dFygP8zR1tvFjShEJZL8OpBlzVcf8nlPJ42LlvBgchriXFHgFE1vjyZJHNiCEHEXIcJGd35mAcoPkJE17lOIxlaB0ijfFKTYJG6X4mEid3tpWZHiGiMgTgRtDMoU+v4KfrsUAzI8QeTOp9eJ3PPNOd7373ymruMpAv8TAnIPwZ6YL5qMELhAMlCI2MkDF0syUMAFjVK7sTYkmTCTEgcBkgmDtSFK7dbsaDxGHDaAtGN0fM/789/CGx2DtBOHDexoPPYn9Irw4ayDcKcAAAAASUVORK5CYII=">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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">
+<meta name="theme-color" content="#00AC97">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -161,7 +164,66 @@ input[type=text],input[type=email],textarea{width:100%;padding:11px 12px;font-fa
   transition:border-color .16s,box-shadow .16s}
 input::placeholder,textarea::placeholder{color:#BCBCB8}
 input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
-textarea{resize:vertical;min-height:72px}
+textarea{resize:vertical;min-height:104px;line-height:1.75}
+
+/* 枚数入力 */
+.qty{display:flex;align-items:center;gap:0}
+.qty button{width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line-strong);background:var(--panel);color:var(--ink-sub);
+  cursor:pointer;transition:border-color .14s,color .14s}
+.qty button:first-of-type{border-radius:var(--radius) 0 0 var(--radius)}
+.qty button:hover{border-color:var(--ink-sub);color:var(--ink)}
+.qty button:active{background:#F4F4F1}
+.qty input{width:64px;height:42px;text-align:center;font-size:15px;font-weight:700;
+  border:1px solid var(--line-strong);border-left:none;border-right:none;border-radius:0;
+  font-variant-numeric:tabular-nums;padding:0;-moz-appearance:textfield}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty input:focus{box-shadow:none;border-color:var(--accent);position:relative;z-index:1}
+.qty button:last-of-type{border-radius:0 var(--radius) var(--radius) 0}
+.qty-unit{font-size:12.5px;color:var(--ink-sub);margin-left:10px}
+.qty-note{display:flex;gap:9px;align-items:flex-start;margin-top:12px;padding:12px 14px;
+  background:#FBF6EA;border:1px solid #EADCC0;border-radius:var(--radius);
+  font-size:11.5px;color:#7F5C1C;line-height:1.75}
+.qty-note svg{flex-shrink:0;margin-top:3px}
+.qty-note strong{font-weight:700}
+.qty-total{margin-top:9px;padding:10px 13px;background:var(--accent-tint);
+  border:1px solid var(--accent-line);border-radius:var(--radius);
+  font-size:12px;color:var(--accent-dark);font-weight:500}
+
+/* 向きの切り替え */
+.orient{display:flex;gap:3px;background:#E5E5E1;border-radius:var(--radius);padding:3px;margin-top:10px}
+.orient button{flex:1;padding:9px 0;font-size:11.5px;font-weight:500;border:none;background:transparent;
+  color:var(--ink-sub);border-radius:1px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:7px;transition:all .16s}
+.orient button:hover{color:var(--ink)}
+.orient button.active{background:var(--panel);color:var(--ink);font-weight:700;box-shadow:var(--shadow-sm)}
+.orient-lbl{font-size:10px;letter-spacing:.16em;color:var(--ink-mute);font-weight:700;
+  margin-top:18px;display:block}
+
+/* 購入状況の選択 */
+.choice{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:16px}
+.choice label{display:flex;align-items:center;gap:9px;padding:12px 13px;cursor:pointer;
+  border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--panel);
+  font-size:12.5px;transition:border-color .16s,background-color .16s}
+.choice label:hover{border-color:var(--ink-sub)}
+.choice input{appearance:none;-webkit-appearance:none;width:16px;height:16px;flex-shrink:0;margin:0;
+  border:1.5px solid var(--line-strong);border-radius:50%;position:relative;transition:border-color .16s}
+.choice input:checked{border-color:var(--accent);border-width:5px}
+.choice label:has(input:checked){border-color:var(--accent);background:var(--accent-tint)}
+
+/* 完了画面 */
+.done{border:1px solid var(--accent-line);border-radius:var(--radius);background:var(--panel);
+  padding:34px 28px;text-align:center;box-shadow:var(--shadow-sm)}
+.done-mark{width:52px;height:52px;margin:0 auto 18px;border-radius:50%;
+  background:var(--accent-tint);color:var(--accent-dark);
+  display:flex;align-items:center;justify-content:center}
+.done-title{font-size:19px;font-weight:700;letter-spacing:.01em;margin-bottom:10px}
+.done-lead{font-size:12.5px;color:var(--ink-sub);line-height:1.85;margin-bottom:24px}
+.done-box{border:1px solid var(--line);border-radius:var(--radius);background:#FAFAF8;
+  padding:18px;margin-bottom:20px;text-align:left}
+.done-box-title{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--accent-dark);margin-bottom:8px}
+.done-box-text{font-size:12.5px;color:var(--ink-sub);line-height:1.8}
+.done-sub{font-size:11px;color:var(--ink-mute);margin-top:16px;line-height:1.8}
 .btn{width:100%;padding:16px;font-size:13.5px;font-weight:500;border-radius:var(--radius);
   cursor:pointer;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:9px;
   transition:background-color .16s,border-color .16s,color .16s,opacity .16s,transform .1s}
@@ -200,7 +262,9 @@ textarea{resize:vertical;min-height:72px}
   .app{display:grid;grid-template-columns:minmax(0,1fr);row-gap:38px;
        padding:0 0 80px;width:100%;max-width:100%}
   .col{display:contents}
-  .app > section{min-width:0;padding-left:18px;padding-right:18px}
+  /* .col は display:contents なので子セレクタでは当たらない。
+     セクションを直接指定して左右余白を持たせる。 */
+  .app section{min-width:0;padding-left:18px;padding-right:18px}
   .s-preview{order:1} .s-plate{order:2} .s-upload{order:3}
   .s-size{order:4} .s-density{order:5} .s-pos{order:6}
   .s-spec{order:7} .s-form{order:8} .s-credit{order:9}
@@ -220,6 +284,8 @@ textarea{resize:vertical;min-height:72px}
   .sec-title{font-size:16px}
   .form-grid{grid-template-columns:minmax(0,1fr)}
   .form-panel{padding:22px}
+  .qty-note{font-size:10.5px;padding:10px 12px;line-height:1.6}
+  .pc-only{display:none}
   .pad button{aspect-ratio:auto;padding:14px 0}
   .credit{margin-top:0}
 }
@@ -260,6 +326,20 @@ textarea{resize:vertical;min-height:72px}
           <span><span class="plate-name">細長タグ</span><span class="plate-dim">90 × 20 mm</span></span>
           <span class="plate-check"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 10.5 8 14.5 16 6"/></svg></span>
         </button>
+      </div>
+
+      <div id="orientWrap" style="display:none">
+        <span class="orient-lbl">向き</span>
+        <div class="orient">
+          <button id="orientV" onclick="setOrient('v')">
+            <svg width="12" height="17" viewBox="0 0 12 17" fill="none" stroke="currentColor" stroke-width="1.4"><rect x=".7" y=".7" width="10.6" height="15.6" rx="2.4"/><circle cx="6" cy="3.4" r="1.1"/></svg>
+            縦
+          </button>
+          <button id="orientH" onclick="setOrient('h')">
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.4"><rect x=".7" y=".7" width="15.6" height="10.6" rx="2.4"/><circle cx="3.4" cy="6" r="1.1"/></svg>
+            横
+          </button>
+        </div>
       </div>
     </section>
 
@@ -354,11 +434,41 @@ textarea{resize:vertical;min-height:72px}
 
     <section class="s-form">
       <div class="sec-head"><h2 class="sec-title">入稿する</h2></div>
-      <div class="form-panel">
+      <div class="form-panel" id="formPanel">
         <div class="form-grid">
           <label class="fld"><span>お名前 <em class="req">*</em></span><input type="text" id="fName" placeholder="山田 太郎" autocomplete="name"></label>
           <label class="fld"><span>メールアドレス <em class="req">*</em></span><input type="email" id="fMail" placeholder="example@mail.com" autocomplete="email"></label>
-          <label class="fld full"><span>備考</span><textarea id="fNote" placeholder="ご要望などがあればご記入ください"></textarea></label>
+          <label class="fld full"><span>備考</span><textarea id="fNote" rows="4" placeholder="例）5枚中2枚がこのデザインです&#10;例）残りは別のデザインを続けて入稿します&#10;例）STORESでは別名義で購入しています（○○名義）"></textarea></label>
+        </div>
+
+        <label class="fld full">
+          <span>このデザインで作る枚数 <em class="req">*</em></span>
+          <div class="qty">
+            <button type="button" onclick="stepQty(-1)" aria-label="減らす">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="7.2" width="12" height="1.6"/></svg>
+            </button>
+            <input type="number" id="fQty" value="1" min="1" max="99" inputmode="numeric">
+            <button type="button" onclick="stepQty(1)" aria-label="増やす">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="7.2" width="12" height="1.6"/><rect x="7.2" y="2" width="1.6" height="12"/></svg>
+            </button>
+            <span class="qty-unit">枚</span>
+          </div>
+          <p class="qty-note">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="7.5" x2="12" y2="13"/><line x1="12" y1="16.5" x2="12" y2="16.5"/></svg>
+            <span>
+              <strong>ご注文枚数と入稿の合計枚数を一致させてください。</strong>
+              <span class="pc-only"><br>この欄は「同じデザインで作る枚数」です。<br>
+              例）円形3枚のご注文で、2種類のデザインにしたい場合<br>
+              → 2枚で入稿 →「続けて入稿する」→ 1枚で入稿（合計3枚）</span>
+            </span>
+          </p>
+          <p class="qty-total" id="qtyTotal" style="display:none"></p>
+        </label>
+
+        <span style="font-size:11px;color:var(--ink-sub);display:block;margin-bottom:6px;font-weight:500;letter-spacing:.02em">ご購入の状況 <em class="req" style="font-style:normal;font-weight:700;color:var(--accent-dark)">*</em></span>
+        <div class="choice">
+          <label><input type="radio" name="purchase" value="done"><span>購入済み</span></label>
+          <label><input type="radio" name="purchase" value="yet" checked><span>これから購入する</span></label>
         </div>
         <button class="btn btn-primary" id="submitBtn" onclick="submitOrder()" disabled>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -368,9 +478,33 @@ textarea{resize:vertical;min-height:72px}
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           入稿データを保存する
         </button>
-        <p class="form-foot">ご購入前・ご購入後どちらでも入稿いただけます。お名前とメールアドレスでご注文と照合します。</p>
+        <p class="form-foot">
+          ※ ご購入前・ご購入後どちらでも入稿いただけます。お名前とメールアドレスでご注文と照合します。
+          ※ 1点ずつデザインを変えたい場合は、入稿後に表示される「続けて入稿する」からお送りください。
+          ※ 入稿内容に誤りがあった場合は、お送りする確認メールにご返信ください。修正を承ります。
+        </p>
       </div>
-      <div class="notice notice-ok"  id="noticeOk"  style="display:none"></div>
+      <!-- 送信完了画面 -->
+      <div class="done" id="donePanel" style="display:none">
+        <div class="done-mark">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12.5 9.5 18 20 6.5"/></svg>
+        </div>
+        <h3 class="done-title">入稿を受け付けました</h3>
+        <p class="done-lead" id="doneLead"></p>
+
+        <div class="done-box">
+          <div class="done-box-title" id="doneBoxTitle"></div>
+          <p class="done-box-text" id="doneBoxText"></p>
+        </div>
+
+        <p class="qty-total" id="doneTotal" style="display:none;text-align:left;margin-bottom:20px"></p>
+
+        <a class="btn btn-primary" id="doneCta" href="#" target="_blank" rel="noopener"></a>
+        <button class="btn btn-secondary" onclick="nextItem()">同じご注文で続けて入稿する</button>
+
+        <p class="done-sub">確認メールが数分たっても届かない場合は、迷惑メールフォルダをご確認ください。</p>
+      </div>
+
       <div class="notice notice-err" id="noticeErr" style="display:none"></div>
     </section>
 
@@ -390,16 +524,22 @@ textarea{resize:vertical;min-height:72px}
    ================================================================ */
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbw13foXsYbVmYvM1Txp_fjRiyYB37D7qg5pRKxF9LPWkaDF202e4tgVhrhOdr09mgDBOw/exec";
 
+// STORES の商品ページ URL（入稿後の誘導先）
+const STORE_ITEM_URL = "https://dyk.stores.jp/items/6a8d56ef5c2c07b8138cb857";  // 商品ページ
+const STORE_HOME_URL = "https://dyk.stores.jp/";                                // ショップTOP
+
 const HOLE_D      = 4;
 const HOLE_MARGIN = 3;
 
+/* w / h は「基準の向き（base）」での寸法。
+   base:"v" = 縦（穴は上） / base:"h" = 横（穴は左） */
 const PLATES = {
   circle: { name:"円形",       shape:"circle", w:50, h:50,
-            hole:{x:0, y:-25 + HOLE_MARGIN + HOLE_D/2} },
+            rotatable:false, base:"v" },
   dogtag: { name:"ドッグタグ", shape:"dogtag", w:40, h:66, bigD:56, fillet:5,
-            hole:{x:0, y:-33 + HOLE_MARGIN + HOLE_D/2} },
+            rotatable:true,  base:"v" },
   bar:    { name:"細長タグ",   shape:"round",  w:90, h:20, r:2,
-            hole:{x:-45 + HOLE_MARGIN + HOLE_D/2, y:0} }
+            rotatable:true,  base:"h" }
 };
 
 const VIEW_PPM   = 14;
@@ -408,10 +548,21 @@ const ART_MARGIN = 8;
 const MAX_MB     = 10;
 /* ================================================================ */
 
-const ART_W = Math.max(...Object.values(PLATES).map(p=>p.w)) + ART_MARGIN*2;
-const ART_H = Math.max(...Object.values(PLATES).map(p=>p.h)) + ART_MARGIN*2;
+const MAX_DIM = Math.max(...Object.values(PLATES).flatMap(p=>[p.w, p.h]));
+const ART_W = MAX_DIM + ART_MARGIN*2;
+const ART_H = MAX_DIM + ART_MARGIN*2;
 
 let plateKey = "circle";
+let orient = "v";          // v = 縦（穴は上） / h = 横（穴は左）
+let itemNo = 0;            // このご注文での入稿点数
+let totalQty = 0;          // このご注文での合計枚数
+const tally = {};          // プレート別の枚数（表示名 → 枚数）
+
+/* ページを開くたびに発行する識別子。
+   ドライブのフォルダをまとめる単位はこの値。
+   同姓同名の別人や、後日の再注文が混ざらない。 */
+const sessionId = Math.random().toString(36).slice(2, 8) +
+                  Date.now().toString(36).slice(-4);
 let img = null;
 let scalePct = 70;
 let density = 0;
@@ -444,15 +595,38 @@ function dogtagPath(c, cx, cy, ppm, p){
   c.closePath();
 }
 
-function platePath(c, cx, cy, ppm){
+/* 現在の向きに合わせた寸法と穴位置を返す */
+function geom(){
   const p = PLATES[plateKey];
-  if(p.shape === "circle"){
-    c.beginPath(); c.arc(cx, cy, (p.w/2)*ppm, 0, Math.PI*2); c.closePath();
-  }else if(p.shape === "dogtag"){
-    dogtagPath(c, cx, cy, ppm, p);
+  const o = p.rotatable ? orient : p.base;
+  const swapped = (o !== p.base);
+  const w = swapped ? p.h : p.w;
+  const h = swapped ? p.w : p.h;
+  const hole = (o === "v")
+    ? { x:0, y:-h/2 + HOLE_MARGIN + HOLE_D/2 }      // 縦：上
+    : { x:-w/2 + HOLE_MARGIN + HOLE_D/2, y:0 };     // 横：左
+  return Object.assign({}, p, { w, h, hole, swapped, orient:o });
+}
+
+function platePath(c, cx, cy, ppm){
+  const g = geom();
+  if(g.shape === "circle"){
+    c.beginPath(); c.arc(cx, cy, (g.w/2)*ppm, 0, Math.PI*2); c.closePath();
+  }else if(g.shape === "dogtag"){
+    if(g.swapped){
+      /* 基準（縦）の形を 90° 回して描く。パスは構築時の座標系で確定するため
+         restore 後も回転が反映される */
+      c.save();
+      c.translate(cx, cy);
+      c.rotate(Math.PI/2);
+      dogtagPath(c, 0, 0, ppm, PLATES[plateKey]);
+      c.restore();
+    }else{
+      dogtagPath(c, cx, cy, ppm, g);
+    }
   }else{
     c.beginPath();
-    c.roundRect(cx-(p.w/2)*ppm, cy-(p.h/2)*ppm, p.w*ppm, p.h*ppm, p.r*ppm);
+    c.roundRect(cx-(g.w/2)*ppm, cy-(g.h/2)*ppm, g.w*ppm, g.h*ppm, g.r*ppm);
     c.closePath();
   }
 }
@@ -529,8 +703,8 @@ function steelTexture(cw, ch){
 /* ---------------- 画像レイヤー ---------------- */
 function imageSizeMM(){
   if(!img) return {w:0,h:0};
-  const p = PLATES[plateKey];
-  const base = Math.max(p.w,p.h) / Math.max(img.width,img.height);
+  const g = geom();
+  const base = Math.max(g.w,g.h) / Math.max(img.width,img.height);
   const r = base * scalePct/100;
   return { w: img.width*r, h: img.height*r };
 }
@@ -572,7 +746,7 @@ function markLayer(ppm, cw, ch, cx, cy, mode){
 
 /* ---------------- 描画 ---------------- */
 function drawPlate(c, ppm, cw, ch, mode){
-  const p = PLATES[plateKey];
+  const p = geom();
   const cx = cw/2, cy = ch/2;
 
   if(mode === "export"){
@@ -663,10 +837,9 @@ function setView(v){
 }
 
 function artboardMM(){
-  const p = PLATES[plateKey];
   if(window.innerWidth <= 900){
-    const m = 6;
-    return { w: p.w + m*2, h: p.h + m*2 };
+    const g = geom(), m = 6;
+    return { w: g.w + m*2, h: g.h + m*2 };
   }
   return { w: ART_W, h: ART_H };
 }
@@ -704,12 +877,25 @@ function selectPlate(k){
   plateKey = k;
   document.querySelectorAll(".plate-btn").forEach(b=>b.classList.toggle("active", b.dataset.plate===k));
   const p = PLATES[k];
-  specPlate.textContent = p.name;
-  specSize.textContent  = p.w + " × " + p.h + " mm";
-  specHole.textContent  = "ø" + HOLE_D + " mm（端から " + HOLE_MARGIN + "mm）";
+  orient = p.base;                                  // 選び直したら基準の向きに戻す
+  orientWrap.style.display = p.rotatable ? "" : "none";
+  syncOrientButtons();
   offX = 0; offY = 0;
   steelCache = null;
   render();
+}
+
+function setOrient(o){
+  orient = o;
+  syncOrientButtons();
+  offX = 0; offY = 0;
+  steelCache = null;
+  render();
+}
+
+function syncOrientButtons(){
+  orientV.classList.toggle("active", orient === "v");
+  orientH.classList.toggle("active", orient === "h");
 }
 
 function loadImage(e){
@@ -746,18 +932,31 @@ function updateDensity(v){
 }
 function nudge(dx,dy){ offX += dx; offY += dy; render(); }
 
+/* 「円形 2枚 / ドッグタグ（縦） 3枚」のような内訳文字列 */
+function tallyText(){
+  return Object.keys(tally).map(k => k + " " + tally[k] + "枚").join(" / ");
+}
+
+function stepQty(d){
+  const el = document.getElementById("fQty");
+  el.value = Math.min(99, Math.max(1, (parseInt(el.value,10) || 1) + d));
+}
+
 function alignTo(mode){
-  const p = PLATES[plateKey], mm = imageSizeMM();
+  const g = geom(), mm = imageSizeMM();
   if(mode==="center"){ offX = 0; offY = 0; }
-  else if(mode==="top")    offY = -(p.h/2 - mm.h/2);
-  else if(mode==="bottom") offY =  (p.h/2 - mm.h/2);
-  else if(mode==="left")   offX = -(p.w/2 - mm.w/2);
-  else if(mode==="right")  offX =  (p.w/2 - mm.w/2);
+  else if(mode==="top")    offY = -(g.h/2 - mm.h/2);
+  else if(mode==="bottom") offY =  (g.h/2 - mm.h/2);
+  else if(mode==="left")   offX = -(g.w/2 - mm.w/2);
+  else if(mode==="right")  offX =  (g.w/2 - mm.w/2);
   render();
 }
 
 function updateSpec(){
-  const mm = imageSizeMM();
+  const g = geom(), mm = imageSizeMM();
+  specPlate.textContent = g.name + (g.rotatable ? "（" + (g.orient === "v" ? "縦" : "横") + "）" : "");
+  specSize.textContent  = g.w + " × " + g.h + " mm";
+  specHole.textContent  = "ø" + HOLE_D + " mm（" + (g.orient === "v" ? "上端" : "左端") + "から " + HOLE_MARGIN + "mm）";
   specReal.textContent = img ? (mm.w.toFixed(1)+" × "+mm.h.toFixed(1)+" mm") : "—";
   specPos.textContent  = offX.toFixed(1)+" / "+offY.toFixed(1)+" mm";
 
@@ -781,8 +980,8 @@ function updateSpec(){
 
 /* 書き出しは常に彫刻データ（白＝彫らない／黒＝彫る） */
 function exportCanvas(){
-  const ppm = EXPORT_PPM, p = PLATES[plateKey];
-  const cw = Math.round(p.w*ppm), ch = Math.round(p.h*ppm);
+  const ppm = EXPORT_PPM, g = geom();
+  const cw = Math.round(g.w*ppm), ch = Math.round(g.h*ppm);
   const ex = document.createElement("canvas");
   ex.width = cw; ex.height = ch;
   drawPlate(ex.getContext("2d"), ppm, cw, ch, "export");
@@ -791,9 +990,9 @@ function exportCanvas(){
 
 function downloadPNG(){
   if(!img) return;
-  const p = PLATES[plateKey];
+  const g = geom();
   const a = document.createElement("a");
-  a.download = "daiyasu_"+plateKey+"_"+p.w+"x"+p.h+"mm.png";
+  a.download = "daiyasu_"+plateKey+"_"+g.w+"x"+g.h+"mm.png";
   a.href = exportCanvas().toDataURL("image/png");
   a.click();
 }
@@ -801,7 +1000,9 @@ function downloadPNG(){
 async function submitOrder(){
   if(!img) return;
   const name = fName.value.trim(), mail = fMail.value.trim(), note = fNote.value.trim();
-  noticeErr.style.display = "none"; noticeOk.style.display = "none";
+  const purchase = document.querySelector('input[name="purchase"]:checked').value;
+  const qty = Math.min(99, Math.max(1, parseInt(document.getElementById("fQty").value,10) || 1));
+  noticeErr.style.display = "none";
 
   if(!name || !mail){
     noticeErr.textContent = "お名前とメールアドレスを入力してください。";
@@ -814,9 +1015,14 @@ async function submitOrder(){
   const mm = imageSizeMM();
   const payload = {
     name, mail, note,
-    plate: PLATES[plateKey].name,
+    purchase: purchase === "done" ? "購入済み" : "これから購入",
+    qty: qty,
+    sessionId: sessionId,
+    plate: PLATES[plateKey].name + (PLATES[plateKey].rotatable ? "（" + (orient==="v"?"縦":"横") + "）" : ""),
     plateKey,
-    plateSize: PLATES[plateKey].w+"x"+PLATES[plateKey].h+"mm",
+    orient: orient === "v" ? "縦" : "横",
+    itemNo: itemNo + 1,
+    plateSize: geom().w+"x"+geom().h+"mm",
     scale: scalePct+"%",
     density: (density>0?"+":"")+density,
     engraveSize: mm.w.toFixed(1)+"x"+mm.h.toFixed(1)+"mm",
@@ -833,11 +1039,11 @@ async function submitOrder(){
       headers: {"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify(payload)
     });
-    noticeOk.innerHTML =
-      "入稿を受け付けました。ご入力のメールアドレス宛に、入稿データを添付した確認メールをお送りしています。<br>" +
-      "数分たっても届かない場合は迷惑メールフォルダをご確認のうえ、お手数ですがご連絡ください。";
-    noticeOk.style.display = "block";
-    submitBtn.textContent = "入稿済み";
+    itemNo++;
+    totalQty += qty;
+    const key = payload.plate;
+    tally[key] = (tally[key] || 0) + qty;
+    showDone(purchase, name, qty);
   }catch(err){
     noticeErr.innerHTML =
       "送信できませんでした。通信環境をご確認のうえ、再度お試しください。<br>" +
@@ -847,6 +1053,81 @@ async function submitOrder(){
     submitBtn.textContent = "この内容で入稿する";
   }
 }
+
+/* 購入状況に応じて完了画面を出し分ける */
+function showDone(purchase, name, qty){
+  formPanel.style.display = "none";
+  donePanel.style.display = "block";
+
+  const nth = itemNo > 1 ? "（" + itemNo + "点目）" : "";
+  const qtyText = qty + "枚";
+
+  /* 複数点入稿している場合は合計を出して、注文枚数との突き合わせを促す */
+  doneTotal.style.display = itemNo > 1 ? "block" : "none";
+  if(itemNo > 1){
+    doneTotal.innerHTML =
+      "このご注文での入稿合計　<strong>" + totalQty + "枚</strong>（" + itemNo + "点）<br>" +
+      "<span style=\"font-size:11.5px;font-weight:400\">" + tallyText() + "</span><br>" +
+      "<span style=\"font-size:11px;font-weight:400;opacity:.85\">ご注文の内訳と一致しているかご確認ください。</span>";
+  }
+
+  if(purchase === "yet"){
+    doneLead.innerHTML =
+      name + " 様のデザイン" + nth + "を " + qtyText + " 分お預かりしました。<br>" +
+      "続いてショップでご購入手続きをお願いします。";
+    doneBoxTitle.textContent = "ご注文はまだ確定していません";
+    doneBoxText.innerHTML =
+      "ご購入の完了をもって注文確定となります。<br>" +
+      "お手続きの際は、入稿時と<strong>同じお名前・メールアドレス</strong>をご入力ください。デザインと照合いたします。";
+    doneCta.textContent = "ショップで購入手続きへ";
+    doneCta.href = STORE_ITEM_URL;
+  }else{
+    doneLead.innerHTML =
+      name + " 様のデザイン" + nth + "を " + qtyText + " 分お預かりしました。<br>" +
+      "ご注文と照合のうえ、2営業日以内に発送いたします。";
+    doneBoxTitle.textContent = "このあとの流れ";
+    doneBoxText.innerHTML =
+      "入稿内容を確認し、順次製作いたします。<br>" +
+      "仕上がりについてご相談が必要な場合のみ、こちらからご連絡いたします。";
+    doneCta.textContent = "ショップを見る";
+    doneCta.href = STORE_HOME_URL;
+  }
+  doneCta.style.display = "flex";
+  donePanel.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+/* 同じ注文で続けて入稿する（お名前・メールは残す） */
+function nextItem(){
+  donePanel.style.display = "none";
+  formPanel.style.display = "block";
+
+  img = null;
+  fileName.textContent = "";
+  fileName.style.display = "none";
+  uploadArea.classList.remove("has-file");
+  imgInput.value = "";
+  fNote.value = "";
+  document.getElementById("fQty").value = 1;
+  qtyTotal.style.display = "block";
+  qtyTotal.innerHTML = "ここまでの入稿　<strong>" + totalQty + "枚</strong>（" + itemNo + "点）<br>" +
+    "<span style=\"font-size:11.5px;font-weight:400\">" + tallyText() + "</span>";
+  noticeInfo.style.display = "";
+  submitBtn.disabled = true;
+  saveBtn.disabled = true;
+  submitBtn.innerHTML =
+    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+    (itemNo + 1) + "点目を入稿する";
+
+  scalePct = 70; density = 0; offX = 0; offY = 0;
+  sizeSlider.value = 70;   sizeVal.textContent = "70%";
+  densitySlider.value = 0; densityVal.textContent = "±0";
+  render();
+
+  window.scrollTo({top:0, behavior:"smooth"});
+  document.querySelector(".col-left")?.scrollTo({top:0, behavior:"smooth"});
+  document.querySelector(".col-right")?.scrollTo({top:0, behavior:"smooth"});
+}
+
 
 function syncHeaderHeight(){
   const h = document.querySelector("header").offsetHeight;
