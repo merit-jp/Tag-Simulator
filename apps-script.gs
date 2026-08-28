@@ -25,36 +25,63 @@ function doPost(e) {
     const now = new Date();
     const stamp = Utilities.formatDate(now, "Asia/Tokyo", "yyyyMMdd_HHmmss");
 
-    // --- 入稿データ（彫刻用PNG）をドライブに保存 ---
-    const folder = DriveApp.getFolderById(FOLDER_ID);
+    // --- 保存先フォルダを決める ---
+    // まとめる単位は sessionId（ブラウザでページを開いた 1 回分）。
+    // 「続けて入稿する」で送られた分だけが同じフォルダに入る。
+    // 後日の再注文や同姓同名の別人は sessionId が違うので必ず別フォルダになる。
+    const root = DriveApp.getFolderById(FOLDER_ID);
+    const itemNo = data.itemNo || 1;
+    const day = Utilities.formatDate(now, "Asia/Tokyo", "yyyyMMdd");
+    const sid = data.sessionId || Utilities.getUuid().slice(0, 10);
+    const orderKey = day + "_" + data.name + "_" + sid;
+
+    const found = root.getFoldersByName(orderKey);
+    let folder;
+    if (found.hasNext()) {
+      folder = found.next();
+    } else {
+      folder = root.createFolder(orderKey);
+      folder.setDescription(data.name + " / " + data.mail);
+    }
+
+    // --- 入稿データ（彫刻用PNG）を保存 ---
+    const fileName = ("0" + itemNo).slice(-2) + "_" + data.plateKey
+                   + "_x" + (data.qty || 1) + "枚.png";
     const blob = Utilities.newBlob(
       Utilities.base64Decode(data.image.replace(/^data:image\/png;base64,/, "")),
       "image/png",
-      stamp + "_" + data.plateKey + "_" + data.name + ".png"
+      fileName
     );
     const file = folder.createFile(blob);
-    const fileUrl = file.getUrl();   // 非公開のまま。管理者はログイン状態で開ける
+    const fileUrl = file.getUrl();      // 非公開のまま
+    const folderUrl = folder.getUrl();
 
     // --- スプレッドシートに記録 ---
     const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
-        "受付日時", "お名前", "メール",
-        "プレート", "プレートサイズ", "彫刻サイズ",
-        "拡大率", "位置ズレ", "備考", "画像URL", "ステータス"
+        "受付日時", "注文ID", "お名前", "メール", "購入状況", "点目", "枚数",
+        "プレート", "向き", "プレートサイズ", "彫刻サイズ",
+        "拡大率", "位置ズレ", "備考", "画像URL", "フォルダURL", "ステータス"
       ]);
     }
     sheet.appendRow([
       Utilities.formatDate(now, "Asia/Tokyo", "yyyy/MM/dd HH:mm:ss"),
+      sid,
       data.name,
       data.mail,
+      data.purchase || "",
+      data.itemNo || 1,
+      data.qty || 1,
       data.plate,
+      data.orient || "",
       data.plateSize,
       data.engraveSize,
       data.scale,
       data.offset,
       data.note || "",
       fileUrl,
+      folderUrl,
       "未対応"
     ]);
 
@@ -62,19 +89,25 @@ function doPost(e) {
     MailApp.sendEmail({
       to: NOTIFY_MAIL,
       replyTo: data.mail,
-      subject: "【入稿】" + data.name + " 様 / " + data.plate,
+      subject: "【入稿】" + data.name + " 様 / " + data.plate
+             + " ×" + (data.qty || 1) + "枚"
+             + ((data.itemNo && data.itemNo > 1) ? "（" + data.itemNo + "点目）" : ""),
       body:
         "彫刻シミュレーターから入稿がありました。\n" +
         "入稿データはこのメールに添付しています。\n\n" +
         "お名前　　：" + data.name + "\n" +
         "メール　　：" + data.mail + "\n" +
+        "点目　　　：" + (data.itemNo || 1) + "点目\n" +
+        "枚数　　　：" + (data.qty || 1) + "枚\n" +
+        "注文ID　　：" + sid + "\n" +
         "プレート　：" + data.plate + "（" + data.plateSize + "）\n" +
         "彫刻サイズ：" + data.engraveSize + "\n" +
         "拡大率　　：" + data.scale + "\n" +
         "濃さ　　　：" + data.density + "\n" +
         "位置ズレ　：" + data.offset + "\n" +
         "備考　　　：" + (data.note || "（なし）") + "\n\n" +
-        "ドライブ　：" + fileUrl + "\n\n" +
+        "画像　　　：" + fileUrl + "\n" +
+        "フォルダ　：" + folderUrl + "\n\n" +
         "※ このメールに返信すると、お客様に直接届きます。\n" +
         "※ STORESの注文一覧でお名前・メールアドレスを照合してください。",
       attachments: [blob]
@@ -92,9 +125,13 @@ function doPost(e) {
         "以下の内容で入稿を受け付けました。\n" +
         "入稿データを控えとして添付しています。\n\n" +
         "プレート　：" + data.plate + "（" + data.plateSize + "）\n" +
-        "彫刻サイズ：" + data.engraveSize + "\n\n" +
-        "内容を確認のうえ、2営業日以内に発送いたします。\n" +
+        "彫刻サイズ：" + data.engraveSize + "\n" +
+        "枚数　　　：" + (data.qty || 1) + "枚\n\n" +
+        "内容を確認のうえ、3営業日以内に発送いたします。\n" +
         "仕上がりに関してご相談が必要な場合は、こちらからご連絡いたします。\n\n" +
+        "■ 入稿内容の修正について\n" +
+        "　データや枚数に誤りがあった場合は、このメールにご返信ください。\n" +
+        "　発送前であれば修正を承ります。\n\n" +
         "――――――――――――\n" +
         "大安工業株式会社\n" +
         "滋賀県東近江市蒲生堂町48番地\n" +
