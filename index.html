@@ -121,19 +121,24 @@ input[type=range]:focus::-webkit-slider-thumb{border-color:var(--accent);box-sha
 .seg-btn:hover{color:var(--ink)}
 .seg-btn.active{background:var(--panel);color:var(--ink);font-weight:700;box-shadow:var(--shadow-sm)}
 
-.stage{background:var(--stage);border-radius:var(--radius);padding:30px;min-width:0;max-width:100%;
+.stage{position:relative;background:var(--stage);border-radius:var(--radius);
+  padding:30px;min-width:0;max-width:100%;overflow:hidden;
   display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);
   background-image:radial-gradient(ellipse at 50% 30%, #262729 0%, #1B1C1E 70%)}
 #previewCanvas{display:block;max-width:100%}
 
-.legend{margin-top:12px;padding:13px 18px;background:var(--panel);border:1px solid var(--line);
-  border-radius:var(--radius);box-shadow:var(--shadow-sm);min-height:56px;display:flex;
-  flex-direction:column;justify-content:center}
-.gradient-bar{height:10px;border-radius:5px;border:1px solid var(--line-strong);
-  background:linear-gradient(to right,#000 0%,#3d3d3d 22%,#8a8a8a 50%,#cfcfcf 76%,#fff 100%)}
-.gradient-labels{display:flex;justify-content:space-between;font-size:10.5px;
-  color:var(--ink-sub);margin-top:7px;letter-spacing:.02em}
-.legend-note{font-size:11.5px;color:var(--ink-sub);line-height:1.6}
+/* --- 枠内オーバーレイ --- */
+#viewSeg{position:absolute;top:12px;right:12px;z-index:2;
+  background:rgba(255,255,255,.10);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.13)}
+#viewSeg .seg-btn{color:rgba(255,255,255,.62);padding:6px 13px;font-size:11px}
+#viewSeg .seg-btn:hover{color:#fff}
+#viewSeg .seg-btn.active{background:rgba(255,255,255,.92);color:#141414;box-shadow:none}
+
+.ov-note{position:absolute;left:13px;bottom:11px;right:13px;z-index:2;
+  font-size:10px;color:rgba(255,255,255,.44);pointer-events:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 
 /* --- 仕様 --- */
 .spec{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);
@@ -200,16 +205,22 @@ textarea{resize:vertical;min-height:104px;line-height:1.75}
 .orient-lbl{font-size:10px;letter-spacing:.16em;color:var(--ink-mute);font-weight:700;
   margin-top:18px;display:block}
 
-/* 購入状況の選択 */
-.choice{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:16px}
-.choice label{display:flex;align-items:center;gap:9px;padding:12px 13px;cursor:pointer;
-  border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--panel);
-  font-size:12.5px;transition:border-color .16s,background-color .16s}
-.choice label:hover{border-color:var(--ink-sub)}
-.choice input{appearance:none;-webkit-appearance:none;width:16px;height:16px;flex-shrink:0;margin:0;
-  border:1.5px solid var(--line-strong);border-radius:50%;position:relative;transition:border-color .16s}
-.choice input:checked{border-color:var(--accent);border-width:5px}
-.choice label:has(input:checked){border-color:var(--accent);background:var(--accent-tint)}
+/* 購入確認 */
+.confirm{display:flex;align-items:flex-start;gap:11px;padding:15px 16px;margin-bottom:16px;
+  cursor:pointer;border:1px solid var(--line-strong);border-radius:var(--radius);
+  background:var(--panel);transition:border-color .16s,background-color .16s}
+.confirm:hover{border-color:var(--ink-sub)}
+.confirm:has(input:checked){border-color:var(--accent);background:var(--accent-tint)}
+.confirm input{appearance:none;-webkit-appearance:none;width:19px;height:19px;flex-shrink:0;margin:1px 0 0;
+  border:1.5px solid var(--line-strong);border-radius:3px;background:var(--panel);
+  position:relative;cursor:pointer;transition:all .16s}
+.confirm input:checked{background:var(--accent);border-color:var(--accent)}
+.confirm input:checked::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2.2px 2.2px 0;transform:rotate(43deg)}
+.confirm-text{display:flex;flex-direction:column;gap:4px}
+.confirm-text strong{font-size:12.5px;font-weight:700}
+.confirm-sub{font-size:11px;color:var(--ink-sub);line-height:1.65}
+.confirm-sub a{color:var(--accent-dark);font-weight:500}
 
 /* 完了画面 */
 .done{border:1px solid var(--accent-line);border-radius:var(--radius);background:var(--panel);
@@ -276,11 +287,10 @@ textarea{resize:vertical;min-height:104px;line-height:1.75}
   }
   .preview-head{margin-bottom:10px;align-items:center;justify-content:flex-end}
   .preview-head .sec-head{display:none}
-  .stage{padding:12px;height:clamp(220px, 44vh, 380px)}
-  .legend{margin-top:10px;padding:9px 14px;min-height:0}
-  .gradient-bar{height:8px}
-  .gradient-labels{font-size:10px;margin-top:5px}
-  .legend-note{font-size:11px}
+  .stage{padding:10px}
+  #viewSeg{top:9px;right:9px}
+  #viewSeg .seg-btn{padding:6px 11px;font-size:10.5px}
+  .ov-note{left:10px;bottom:8px;right:10px;font-size:9px}
   .sec-title{font-size:16px}
   .form-grid{grid-template-columns:minmax(0,1fr)}
   .form-panel{padding:22px}
@@ -401,20 +411,20 @@ textarea{resize:vertical;min-height:104px;line-height:1.75}
     <section class="s-preview">
       <div class="preview-head">
         <div class="sec-head"><h2 class="sec-title">仕上がりプレビュー</h2></div>
-        <div class="seg">
-          <button class="seg-btn active" id="segData" onclick="setView('data')">彫刻データ</button>
-          <button class="seg-btn" id="segFinish" onclick="setView('finish')">仕上がりイメージ</button>
-        </div>
       </div>
-      <div class="stage"><canvas id="previewCanvas"></canvas></div>
-      <div class="legend">
-        <div id="legendData">
-          <div class="gradient-bar"></div>
-          <div class="gradient-labels"><span>深く彫る</span><span>浅く彫る</span><span>彫らない</span></div>
+
+      <div class="stage">
+        <canvas id="previewCanvas"></canvas>
+
+        <!-- 表示切替（枠内・右上） -->
+        <div class="seg" id="viewSeg">
+          <button class="seg-btn active" id="segData" onclick="setView('data')">彫刻データ</button>
+          <button class="seg-btn" id="segFinish" onclick="setView('finish')">仕上がり</button>
         </div>
-        <div id="legendFinish" style="display:none">
-          <p class="legend-note">鏡面仕上げのステンレスにレーザー彫刻した状態のイメージです。実際の色味・映り込みは素材や光の当たり方により異なります。</p>
-        </div>
+
+        <!-- 注釈（枠内・左下） -->
+        <p class="ov-note" id="legendData">黒は深く彫り、グレーは浅く、白は彫りません。</p>
+        <p class="ov-note" id="legendFinish" style="display:none">鏡面ステンレスに彫刻したイメージです。</p>
       </div>
     </section>
 
@@ -465,11 +475,13 @@ textarea{resize:vertical;min-height:104px;line-height:1.75}
           <p class="qty-total" id="qtyTotal" style="display:none"></p>
         </label>
 
-        <span style="font-size:11px;color:var(--ink-sub);display:block;margin-bottom:6px;font-weight:500;letter-spacing:.02em">ご購入の状況 <em class="req" style="font-style:normal;font-weight:700;color:var(--accent-dark)">*</em></span>
-        <div class="choice">
-          <label><input type="radio" name="purchase" value="done"><span>購入済み</span></label>
-          <label><input type="radio" name="purchase" value="yet" checked><span>これから購入する</span></label>
-        </div>
+        <label class="confirm" id="confirmBox">
+          <input type="checkbox" id="fBought" onchange="syncSubmit()">
+          <span class="confirm-text">
+            <strong>ショップでのご購入が完了しています</strong>
+            <span class="confirm-sub">まだの方は <a href="#" id="buyFirstLink" target="_blank" rel="noopener">こちらから商品ページへ</a>。ご購入後に入稿してください。</span>
+          </span>
+        </label>
         <button class="btn btn-primary" id="submitBtn" onclick="submitOrder()" disabled>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           この内容で入稿する
@@ -479,7 +491,7 @@ textarea{resize:vertical;min-height:104px;line-height:1.75}
           入稿データを保存する
         </button>
         <p class="form-foot">
-          ※ ご購入前・ご購入後どちらでも入稿いただけます。お名前とメールアドレスでご注文と照合します。
+          ※ ショップでのご購入後に入稿してください。お名前とメールアドレスでご注文と照合します。
           ※ 1点ずつデザインを変えたい場合は、入稿後に表示される「続けて入稿する」からお送りください。
           ※ 入稿内容に誤りがあった場合は、お送りする確認メールにご返信ください。修正を承ります。
         </p>
@@ -749,6 +761,8 @@ function drawPlate(c, ppm, cw, ch, mode){
   const p = geom();
   const cx = cw/2, cy = ch/2;
 
+
+
   if(mode === "export"){
     c.save();
     platePath(c, cx, cy, ppm);
@@ -827,12 +841,16 @@ function drawPlate(c, ppm, cw, ch, mode){
   c.restore();
 }
 
+function syncOverlay(){
+  legendData.style.display   = view === "data"   ? "" : "none";
+  legendFinish.style.display = view === "finish" ? "" : "none";
+}
+
 function setView(v){
   view = v;
   segFinish.classList.toggle("active", v === "finish");
   segData.classList.toggle("active",  v === "data");
-  legendFinish.style.display = v === "finish" ? "" : "none";
-  legendData.style.display   = v === "data"   ? "" : "none";
+  syncOverlay();
   render();
 }
 
@@ -864,13 +882,8 @@ function render(){
   canvas.style.width  = Math.round(cw*s) + "px";
   canvas.style.height = Math.round(ch*s) + "px";
 
-  if(!img){
-    c.fillStyle = "rgba(255,255,255,.45)";
-    c.font = "500 20px 'Noto Sans JP',sans-serif";
-    c.textAlign = "center"; c.textBaseline = "middle";
-    c.fillText("画像を選んでください", cw/2, ch/2);
-  }
   updateSpec();
+  syncOverlay();
 }
 
 function selectPlate(k){
@@ -915,8 +928,8 @@ function loadImage(e){
       fileName.style.display = "block";
       uploadArea.classList.add("has-file");
       noticeInfo.style.display = "none";
-      submitBtn.disabled = false;
       saveBtn.disabled = false;
+      syncSubmit();
       render();
     };
     i.src = ev.target.result;
@@ -935,6 +948,11 @@ function nudge(dx,dy){ offX += dx; offY += dy; render(); }
 /* 「円形 2枚 / ドッグタグ（縦） 3枚」のような内訳文字列 */
 function tallyText(){
   return Object.keys(tally).map(k => k + " " + tally[k] + "枚").join(" / ");
+}
+
+/* 購入確認にチェックが入るまで入稿できないようにする */
+function syncSubmit(){
+  submitBtn.disabled = !(img && document.getElementById("fBought").checked);
 }
 
 function stepQty(d){
@@ -1000,7 +1018,10 @@ function downloadPNG(){
 async function submitOrder(){
   if(!img) return;
   const name = fName.value.trim(), mail = fMail.value.trim(), note = fNote.value.trim();
-  const purchase = document.querySelector('input[name="purchase"]:checked').value;
+  if(!document.getElementById("fBought").checked){
+    noticeErr.textContent = "ご購入が完了していることをご確認のうえ、チェックを入れてください。";
+    noticeErr.style.display = "block"; return;
+  }
   const qty = Math.min(99, Math.max(1, parseInt(document.getElementById("fQty").value,10) || 1));
   noticeErr.style.display = "none";
 
@@ -1015,7 +1036,7 @@ async function submitOrder(){
   const mm = imageSizeMM();
   const payload = {
     name, mail, note,
-    purchase: purchase === "done" ? "購入済み" : "これから購入",
+    purchase: "購入済み",
     qty: qty,
     sessionId: sessionId,
     plate: PLATES[plateKey].name + (PLATES[plateKey].rotatable ? "（" + (orient==="v"?"縦":"横") + "）" : ""),
@@ -1043,7 +1064,7 @@ async function submitOrder(){
     totalQty += qty;
     const key = payload.plate;
     tally[key] = (tally[key] || 0) + qty;
-    showDone(purchase, name, qty);
+    showDone(name, qty);
   }catch(err){
     noticeErr.innerHTML =
       "送信できませんでした。通信環境をご確認のうえ、再度お試しください。<br>" +
@@ -1054,15 +1075,15 @@ async function submitOrder(){
   }
 }
 
-/* 購入状況に応じて完了画面を出し分ける */
-function showDone(purchase, name, qty){
+function showDone(name, qty){
   formPanel.style.display = "none";
   donePanel.style.display = "block";
 
   const nth = itemNo > 1 ? "（" + itemNo + "点目）" : "";
-  const qtyText = qty + "枚";
+  doneLead.innerHTML =
+    name + " 様のデザイン" + nth + "を " + qty + "枚 分お預かりしました。<br>" +
+    "ご注文と照合のうえ、3営業日以内に発送いたします。";
 
-  /* 複数点入稿している場合は合計を出して、注文枚数との突き合わせを促す */
   doneTotal.style.display = itemNo > 1 ? "block" : "none";
   if(itemNo > 1){
     doneTotal.innerHTML =
@@ -1071,27 +1092,13 @@ function showDone(purchase, name, qty){
       "<span style=\"font-size:11px;font-weight:400;opacity:.85\">ご注文の内訳と一致しているかご確認ください。</span>";
   }
 
-  if(purchase === "yet"){
-    doneLead.innerHTML =
-      name + " 様のデザイン" + nth + "を " + qtyText + " 分お預かりしました。<br>" +
-      "続いてショップでご購入手続きをお願いします。";
-    doneBoxTitle.textContent = "ご注文はまだ確定していません";
-    doneBoxText.innerHTML =
-      "ご購入の完了をもって注文確定となります。<br>" +
-      "お手続きの際は、入稿時と<strong>同じお名前・メールアドレス</strong>をご入力ください。デザインと照合いたします。";
-    doneCta.textContent = "ショップで購入手続きへ";
-    doneCta.href = STORE_ITEM_URL;
-  }else{
-    doneLead.innerHTML =
-      name + " 様のデザイン" + nth + "を " + qtyText + " 分お預かりしました。<br>" +
-      "ご注文と照合のうえ、2営業日以内に発送いたします。";
-    doneBoxTitle.textContent = "このあとの流れ";
-    doneBoxText.innerHTML =
-      "入稿内容を確認し、順次製作いたします。<br>" +
-      "仕上がりについてご相談が必要な場合のみ、こちらからご連絡いたします。";
-    doneCta.textContent = "ショップを見る";
-    doneCta.href = STORE_HOME_URL;
-  }
+  doneBoxTitle.textContent = "このあとの流れ";
+  doneBoxText.innerHTML =
+    "入稿内容を確認し、順次製作いたします。<br>" +
+    "仕上がりについてご相談が必要な場合のみ、こちらからご連絡いたします。";
+
+  doneCta.textContent = "ショップを見る";
+  doneCta.href = STORE_HOME_URL;
   doneCta.style.display = "flex";
   donePanel.scrollIntoView({behavior:"smooth", block:"center"});
 }
@@ -1108,11 +1115,11 @@ function nextItem(){
   imgInput.value = "";
   fNote.value = "";
   document.getElementById("fQty").value = 1;
+  syncSubmit();
   qtyTotal.style.display = "block";
   qtyTotal.innerHTML = "ここまでの入稿　<strong>" + totalQty + "枚</strong>（" + itemNo + "点）<br>" +
     "<span style=\"font-size:11.5px;font-weight:400\">" + tallyText() + "</span>";
   noticeInfo.style.display = "";
-  submitBtn.disabled = true;
   saveBtn.disabled = true;
   submitBtn.innerHTML =
     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
@@ -1134,14 +1141,39 @@ function syncHeaderHeight(){
   document.documentElement.style.setProperty("--head-h", h + "px");
 }
 
-let rt;
-window.addEventListener("resize", ()=>{
-  clearTimeout(rt);
-  rt = setTimeout(()=>{ syncHeaderHeight(); steelCache = null; if(canvas.width) render(); }, 120);
-});
-window.addEventListener("load", ()=>{ syncHeaderHeight(); render(); });
+/* スマホでスクロールするとアドレスバーの出入りで vh が変動し、
+   プレビューの高さがカクつく。起動時に一度だけ px で固定する。 */
+let stageFixed = 0;
+function lockStageHeight(force){
+  const stage = canvas.parentElement;
+  if(window.innerWidth > 900){
+    stage.style.height = ""; stageFixed = 0; return;
+  }
+  if(stageFixed && !force) return;
+  stageFixed = Math.round(Math.min(Math.max(window.innerHeight * 0.42, 220), 380));
+  stage.style.height = stageFixed + "px";
+}
 
+let rt, lastW = window.innerWidth;
+window.addEventListener("resize", ()=>{
+  /* 幅が変わっていなければアドレスバーの伸縮。高さは測り直さない */
+  if(window.innerWidth === lastW) return;
+  lastW = window.innerWidth;
+  clearTimeout(rt);
+  rt = setTimeout(()=>{
+    syncHeaderHeight(); lockStageHeight(true);
+    steelCache = null; if(canvas.width) render();
+  }, 120);
+});
+window.addEventListener("orientationchange", ()=>{
+  setTimeout(()=>{ syncHeaderHeight(); lockStageHeight(true); steelCache = null; render(); }, 250);
+});
+window.addEventListener("load", ()=>{ syncHeaderHeight(); lockStageHeight(true); render(); });
+
+document.getElementById("buyFirstLink").href = STORE_ITEM_URL;
 syncHeaderHeight();
+lockStageHeight(true);
+syncSubmit();
 selectPlate("circle");
 </script>
 </body>
