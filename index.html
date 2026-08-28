@@ -113,13 +113,6 @@ input[type=range]:focus::-webkit-slider-thumb{border-color:var(--accent);box-sha
 .preview-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;
   flex-wrap:wrap;min-width:0}
 .preview-head .sec-head{margin-bottom:0}
-.seg{display:inline-flex;background:#E5E5E1;border-radius:var(--radius);padding:3px;gap:3px;
-  flex-shrink:0;max-width:100%}
-.seg-btn{padding:7px 14px;font-size:11.5px;font-weight:500;border:none;background:transparent;
-  white-space:nowrap;
-  color:var(--ink-sub);border-radius:1px;cursor:pointer;letter-spacing:.02em;transition:all .16s}
-.seg-btn:hover{color:var(--ink)}
-.seg-btn.active{background:var(--panel);color:var(--ink);font-weight:700;box-shadow:var(--shadow-sm)}
 
 .stage{position:relative;background:var(--stage);border-radius:var(--radius);
   padding:30px;min-width:0;max-width:100%;overflow:hidden;
@@ -128,12 +121,24 @@ input[type=range]:focus::-webkit-slider-thumb{border-color:var(--accent);box-sha
 #previewCanvas{display:block;max-width:100%}
 
 /* --- 枠内オーバーレイ --- */
-#viewSeg{position:absolute;top:12px;right:12px;z-index:2;
-  background:rgba(255,255,255,.10);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,.13)}
-#viewSeg .seg-btn{color:rgba(255,255,255,.62);padding:6px 13px;font-size:11px}
-#viewSeg .seg-btn:hover{color:#fff}
-#viewSeg .seg-btn.active{background:rgba(255,255,255,.92);color:#141414;box-shadow:none}
+/* 表示切替トグル */
+.toggle{position:absolute;top:12px;right:12px;z-index:2;
+  display:flex;align-items:center;gap:9px;
+  padding:7px 11px 7px 13px;border-radius:999px;cursor:pointer;
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:background-color .2s,border-color .2s}
+.toggle:hover{background:rgba(255,255,255,.15)}
+.toggle-label{font-size:11px;font-weight:500;letter-spacing:.03em;
+  color:rgba(255,255,255,.55);transition:color .2s;white-space:nowrap}
+.toggle[aria-checked="true"] .toggle-label{color:#fff}
+.toggle-track{position:relative;width:34px;height:19px;border-radius:999px;flex-shrink:0;
+  background:rgba(255,255,255,.20);transition:background-color .22s}
+.toggle[aria-checked="true"] .toggle-track{background:var(--accent)}
+.toggle-knob{position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);
+  transition:transform .22s cubic-bezier(.4,0,.2,1)}
+.toggle[aria-checked="true"] .toggle-knob{transform:translateX(15px)}
 
 .ov-note{position:absolute;left:13px;bottom:11px;right:13px;z-index:2;
   font-size:10px;color:rgba(255,255,255,.44);pointer-events:none;
@@ -152,7 +157,6 @@ input[type=range]:focus::-webkit-slider-thumb{border-color:var(--accent);box-sha
 
 .notice{padding:13px 16px;border-radius:var(--radius);font-size:12px;line-height:1.7;margin-top:14px}
 .notice-info{background:#EBEBE7;color:var(--ink-sub);border:1px solid var(--line)}
-.notice-ok{background:var(--accent-tint);color:var(--accent-dark);border:1px solid var(--accent-line)}
 .notice-err{background:#FBEFEF;color:#8A2D2D;border:1px solid #E7D0D0}
 .notice-warn{background:#FBF6EA;color:#7F5C1C;border:1px solid #EADCC0}
 
@@ -288,8 +292,11 @@ textarea{resize:vertical;min-height:104px;line-height:1.75}
   .preview-head{margin-bottom:10px;align-items:center;justify-content:flex-end}
   .preview-head .sec-head{display:none}
   .stage{padding:10px}
-  #viewSeg{top:9px;right:9px}
-  #viewSeg .seg-btn{padding:6px 11px;font-size:10.5px}
+  .toggle{top:8px;right:8px;gap:7px;padding:5px 8px 5px 10px}
+  .toggle-label{font-size:9.5px}
+  .toggle-track{width:28px;height:16px}
+  .toggle-knob{width:12px;height:12px}
+  .toggle[aria-checked="true"] .toggle-knob{transform:translateX(12px)}
   .ov-note{left:10px;bottom:8px;right:10px;font-size:9px}
   .sec-title{font-size:16px}
   .form-grid{grid-template-columns:minmax(0,1fr)}
@@ -417,10 +424,11 @@ textarea{resize:vertical;min-height:104px;line-height:1.75}
         <canvas id="previewCanvas"></canvas>
 
         <!-- 表示切替（枠内・右上） -->
-        <div class="seg" id="viewSeg">
-          <button class="seg-btn active" id="segData" onclick="setView('data')">彫刻データ</button>
-          <button class="seg-btn" id="segFinish" onclick="setView('finish')">仕上がり</button>
-        </div>
+        <button class="toggle" id="viewSeg" onclick="toggleView()"
+                role="switch" aria-checked="false" aria-label="仕上がりイメージを表示">
+          <span class="toggle-label">仕上がり</span>
+          <span class="toggle-track"><span class="toggle-knob"></span></span>
+        </button>
 
         <!-- 注釈（枠内・左下） -->
         <p class="ov-note" id="legendData">黒は深く彫り、グレーは浅く、白は彫りません。</p>
@@ -556,7 +564,7 @@ const PLATES = {
 
 const VIEW_PPM   = 14;
 const EXPORT_PPM = 40;
-const ART_MARGIN = 8;
+const ART_MARGIN = 4;
 const MAX_MB     = 10;
 /* ================================================================ */
 
@@ -761,8 +769,6 @@ function drawPlate(c, ppm, cw, ch, mode){
   const p = geom();
   const cx = cw/2, cy = ch/2;
 
-
-
   if(mode === "export"){
     c.save();
     platePath(c, cx, cy, ppm);
@@ -848,10 +854,13 @@ function syncOverlay(){
 
 function setView(v){
   view = v;
-  segFinish.classList.toggle("active", v === "finish");
-  segData.classList.toggle("active",  v === "data");
+  viewSeg.setAttribute("aria-checked", v === "finish" ? "true" : "false");
   syncOverlay();
   render();
+}
+
+function toggleView(){
+  setView(view === "finish" ? "data" : "finish");
 }
 
 function artboardMM(){
@@ -876,8 +885,10 @@ function render(){
   const padX = parseFloat(cs.paddingLeft)*2, padY = parseFloat(cs.paddingTop)*2;
   const mobile = window.innerWidth <= 900;
   const availW = Math.max(stage.clientWidth - padX, 120);
-  const availH = mobile ? Math.max(stage.clientHeight - padY, 160)
-                        : Math.max(window.innerHeight - 430, 260);
+  /* PC は右カラムの高さから、上下のセクションぶんを引いて求める */
+  const availH = mobile
+    ? Math.max(stage.clientHeight - padY, 160)
+    : Math.max(Math.min(window.innerHeight * 0.66, 620) - padY, 280);
   const s = Math.min(availW/cw, availH/ch, 1);
   canvas.style.width  = Math.round(cw*s) + "px";
   canvas.style.height = Math.round(ch*s) + "px";
@@ -1169,6 +1180,19 @@ window.addEventListener("orientationchange", ()=>{
   setTimeout(()=>{ syncHeaderHeight(); lockStageHeight(true); steelCache = null; render(); }, 250);
 });
 window.addEventListener("load", ()=>{ syncHeaderHeight(); lockStageHeight(true); render(); });
+
+/* Web フォントの読み込みやレイアウト確定の前に初回描画が走ると、
+   stage の幅が未確定でプレビューが小さくなる。確定後に描き直す。 */
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(()=>{ lockStageHeight(true); render(); });
+}
+if(window.ResizeObserver){
+  let lastStageW = 0;
+  new ResizeObserver(entries=>{
+    const w = Math.round(entries[0].contentRect.width);
+    if(w && w !== lastStageW){ lastStageW = w; render(); }
+  }).observe(canvas.parentElement);
+}
 
 document.getElementById("buyFirstLink").href = STORE_ITEM_URL;
 syncHeaderHeight();
