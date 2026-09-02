@@ -343,6 +343,11 @@ textarea{resize:vertical;min-height:104px;line-height:1.75}
           <span><span class="plate-name">細長タグ</span><span class="plate-dim">90 × 20 mm</span></span>
           <span class="plate-check"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 10.5 8 14.5 16 6"/></svg></span>
         </button>
+        <button class="plate-btn" data-plate="diamond" onclick="selectPlate('diamond')">
+          <span class="plate-icon"><svg width="18" height="28" viewBox="0 0 18 28" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5.76 3.71 C5.76 3.71 2.97 13.03 2.97 13.03 C2.78 13.66 2.78 14.34 2.97 14.97 C2.97 14.97 5.76 24.29 5.76 24.29 C6.72 27.5 11.28 27.5 12.24 24.29 C12.24 24.29 15.03 14.97 15.03 14.97 C15.22 14.34 15.22 13.66 15.03 13.03 C15.03 13.03 12.24 3.71 12.24 3.71 C11.28 0.5 6.72 0.5 5.76 3.71 Z"/><circle cx="9" cy="4.3" r="1.4"/></svg></span>
+          <span><span class="plate-name">ひし形タグ</span><span class="plate-dim">40.5 × 87.8 mm</span></span>
+          <span class="plate-check"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 10.5 8 14.5 16 6"/></svg></span>
+        </button>
       </div>
 
       <div id="orientWrap" style="display:none">
@@ -559,8 +564,44 @@ const PLATES = {
   dogtag: { name:"ドッグタグ", shape:"dogtag", w:40, h:66, bigD:56, fillet:5,
             rotatable:true,  base:"v" },
   bar:    { name:"細長タグ",   shape:"round",  w:90, h:20, r:2,
-            rotatable:true,  base:"h" }
+            rotatable:true,  base:"h" },
+  diamond: { name:"ひし形タグ", shape:"diamond", w:40.4828, h:87.8045,
+             rotatable:true,  base:"v", holeOffset:7.613 }
+             /* holeOffset：上端(または左端)から穴の中心までの距離。実測値。
+                先端が鋭く尖った形状のため、他プレートの
+                HOLE_MARGIN(3mm)より広い（現物データに合わせた固定値）。 */
 };
+
+/* ひし形タグの輪郭：イラレのパス（DXF書き出し）から実測した制御点。
+   3次ベジェの制御点列（8セグメント、各区間3点+始点）。
+   中心を原点、mm単位、Y上向き。数式で近似せず実データをそのまま使う。 */
+const DIAMOND_PTS = [
+    [-10.5361,33.45],
+    [-10.5361,33.45],
+    [-19.6228,3.1608],
+    [-19.6228,3.1608],
+    [-20.2414,1.099],
+    [-20.2414,-1.099],
+    [-19.6228,-3.1608],
+    [-19.6228,-3.1608],
+    [-10.5361,-33.45],
+    [-10.5361,-33.45],
+    [-7.4004,-43.9022],
+    [7.4004,-43.9022],
+    [10.5361,-33.45],
+    [10.5361,-33.45],
+    [19.6228,-3.1608],
+    [19.6228,-3.1608],
+    [20.2414,-1.099],
+    [20.2414,1.099],
+    [19.6228,3.1608],
+    [19.6228,3.1608],
+    [10.5361,33.45],
+    [10.5361,33.45],
+    [7.4004,43.9022],
+    [-7.4004,43.9022],
+    [-10.5361,33.45]
+  ];
 
 const VIEW_PPM   = 14;
 const EXPORT_PPM = 40;
@@ -615,6 +656,26 @@ function dogtagPath(c, cx, cy, ppm, p){
   c.closePath();
 }
 
+/* ひし形タグ：実測した制御点をそのまま3次ベジェで描く。
+   DIAMOND_PTS は [始点, cp1,cp2,終点, cp1,cp2,終点, ...] の並び
+   （knot多重度3のクランプ済みBスプライン＝連続するベジェと同義）。
+   base(v)の寸法(40.4828 x 87.8045)で構築したパスを、
+   横向きのときは呼び出し側で90°回転させる。 */
+function diamondPath(c, cx, cy, ppm){
+  const P = DIAMOND_PTS;
+  const X = v => cx + v*ppm, Y = v => cy - v*ppm;  // Y上向き→Canvas Y下向き
+  c.beginPath();
+  c.moveTo(X(P[0][0]), Y(P[0][1]));
+  for(let i = 1; i < P.length - 2; i += 3){
+    c.bezierCurveTo(
+      X(P[i][0]),   Y(P[i][1]),
+      X(P[i+1][0]), Y(P[i+1][1]),
+      X(P[i+2][0]), Y(P[i+2][1])
+    );
+  }
+  c.closePath();
+}
+
 /* 現在の向きに合わせた寸法と穴位置を返す */
 function geom(){
   const p = PLATES[plateKey];
@@ -622,9 +683,10 @@ function geom(){
   const swapped = (o !== p.base);
   const w = swapped ? p.h : p.w;
   const h = swapped ? p.w : p.h;
+  const off = (p.holeOffset != null) ? p.holeOffset : (HOLE_MARGIN + HOLE_D/2);
   const hole = (o === "v")
-    ? { x:0, y:-h/2 + HOLE_MARGIN + HOLE_D/2 }      // 縦：上
-    : { x:-w/2 + HOLE_MARGIN + HOLE_D/2, y:0 };     // 横：左
+    ? { x:0, y:-h/2 + off }      // 縦：上
+    : { x:-w/2 + off, y:0 };     // 横：左
   return Object.assign({}, p, { w, h, hole, swapped, orient:o });
 }
 
@@ -643,6 +705,16 @@ function platePath(c, cx, cy, ppm){
       c.restore();
     }else{
       dogtagPath(c, cx, cy, ppm, g);
+    }
+  }else if(g.shape === "diamond"){
+    if(g.swapped){
+      c.save();
+      c.translate(cx, cy);
+      c.rotate(Math.PI/2);
+      diamondPath(c, 0, 0, ppm);
+      c.restore();
+    }else{
+      diamondPath(c, cx, cy, ppm);
     }
   }else{
     c.beginPath();
@@ -985,7 +1057,8 @@ function updateSpec(){
   const g = geom(), mm = imageSizeMM();
   specPlate.textContent = g.name + (g.rotatable ? "（" + (g.orient === "v" ? "縦" : "横") + "）" : "");
   specSize.textContent  = g.w + " × " + g.h + " mm";
-  specHole.textContent  = "ø" + HOLE_D + " mm（" + (g.orient === "v" ? "上端" : "左端") + "から " + HOLE_MARGIN + "mm）";
+  const holeMarginActual = (g.holeOffset != null) ? (g.holeOffset - HOLE_D/2) : HOLE_MARGIN;
+  specHole.textContent  = "ø" + HOLE_D + " mm（" + (g.orient === "v" ? "上端" : "左端") + "から " + holeMarginActual.toFixed(1).replace(/\.0$/,'') + "mm）";
   specReal.textContent = img ? (mm.w.toFixed(1)+" × "+mm.h.toFixed(1)+" mm") : "—";
   specPos.textContent  = offX.toFixed(1)+" / "+offY.toFixed(1)+" mm";
 
